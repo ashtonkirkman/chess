@@ -8,10 +8,11 @@ package chess;
  */
 public class ChessBoard {
 
-    private ChessPiece boardPieces[][] = new ChessPiece[8][8];  // dataType[][] arrayName = new dataType[rows][columns];
+    private static final int boardSize = 8;
+    private ChessPiece boardPieces[][] = new ChessPiece[boardSize][boardSize];  // dataType[][] arrayName = new dataType[rows][columns];
 
     public ChessBoard() {
-
+        resetBoard();
     }
 
     /**
@@ -24,7 +25,7 @@ public class ChessBoard {
         int row = position.getRow();
         int col = position.getColumn();
 
-        boardPieces[row][col] = piece;
+        boardPieces[row-1][col-1] = piece;
     }
 
     /**
@@ -38,7 +39,7 @@ public class ChessBoard {
         int row = position.getRow();
         int col = position.getColumn();
 
-        return boardPieces[row][col];
+        return boardPieces[row-1][col-1];
     }
 
     /**
@@ -47,17 +48,17 @@ public class ChessBoard {
      */
     public void resetBoard() {
 
-        ChessPosition[][] positions = new ChessPosition[8][8];
+        ChessPosition[][] positions = new ChessPosition[boardSize][boardSize];
 
-        for(var i = 0; i < 8; i++) {
-            for(var j = 0; j < 8; j++) {
-                positions[i][j] = new ChessPosition(i, j);
+        for(var i = 0; i < boardSize; i++) {
+            for(var j = 0; j < boardSize; j++) {
+                positions[i][j] = new ChessPosition(i+1, j+1);
             }
         }
 
-        for(var i = 0; i < boardPieces.length; i++) {
-            for (var j = 0; j < boardPieces[0].length; j++) {
-                boardPieces[i][j] = null;
+        for(var i = 0; i < boardSize; i++) {
+            for (var j = 0; j < boardSize; j++) {
+                addPiece(positions[i][j], null);
             }
         }
 
@@ -93,11 +94,11 @@ public class ChessBoard {
                 new ChessPiece(black, pawn), new ChessPiece(black, pawn)
         };
 
-        for(var i = 0; i < 8; i++) {
-            addPiece(positions[0][i], whitePieces[i]);
-            addPiece(positions[1][i], whitePieces[i+8]);
-            addPiece(positions[7][i], blackPieces[i]);
-            addPiece(positions[6][i], blackPieces[i+8]);
+        for(var i = 0; i < boardSize; i++) {
+            addPiece(positions[0][i], whitePieces[i]);      // Fill up the 1st rank with white's mains
+            addPiece(positions[1][i], whitePieces[i+8]);    // Fill up the 2nd rank with white's pawns
+            addPiece(positions[7][i], blackPieces[i]);      // Fill up the 8th rank with black's mains
+            addPiece(positions[6][i], blackPieces[i+8]);    // Fill up the 7th rank with black's pawns
         }
     }
 }
