@@ -46,8 +46,43 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        a1 = new ChessPosition(1, 1);
-        a2 = new ChessPosition(1, 2);
-        a3 = new Chess
+        ChessPosition a1 = new ChessPosition(1, 1);
+        ChessPosition a2 = new ChessPosition(1, 2);
+        ChessPosition a3 = new ChessPosition(1, 3);
+        ChessPosition a4 = new ChessPosition(1, 4);
+        ChessPosition a5 = new ChessPosition(1, 5);
+        ChessPosition a6 = new ChessPosition(1, 6);
+        ChessPosition a7 = new ChessPosition(1, 7);
+        ChessPosition a8 = new ChessPosition(1, 8);
+        ChessPosition b1 = new ChessPosition(2, 1);
+        ChessPosition b2 = new ChessPosition(2, 2);
+        ChessPosition b3 = new ChessPosition(2, 3);
+        ChessPosition b4 = new ChessPosition(2, 4);
+        ChessPosition b5 = new ChessPosition(2, 5);
+        ChessPosition b6 = new ChessPosition(2, 6);
+        ChessPosition b7 = new ChessPosition(2, 7);
+        ChessPosition b8 = new ChessPosition(2, 8);
+        ChessPosition g1 = new ChessPosition(7, 1);
+        ChessPosition g2 = new ChessPosition(7, 2);
+        ChessPosition g3 = new ChessPosition(7, 3);
+        ChessPosition g4 = new ChessPosition(7, 4);
+        ChessPosition g5 = new ChessPosition(7, 5);
+        ChessPosition g6 = new ChessPosition(7, 6);
+        ChessPosition g7 = new ChessPosition(7, 7);
+        ChessPosition g8 = new ChessPosition(7, 8);
+        ChessPosition h1 = new ChessPosition(8, 1);
+        ChessPosition h2 = new ChessPosition(8, 2);
+        ChessPosition h3 = new ChessPosition(8, 3);
+        ChessPosition h4 = new ChessPosition(8, 4);
+        ChessPosition h5 = new ChessPosition(8, 5);
+        ChessPosition h6 = new ChessPosition(8, 6);
+        ChessPosition h7 = new ChessPosition(8, 7);
+        ChessPosition h8 = new ChessPosition(8, 8);
+
+        for(var i = 0; i < boardPieces.length; i++) {
+            for (var j = 0; j < boardPieces[0].length; j++) {
+                boardPieces[i][j] = null;
+            }
+        }
     }
 }
