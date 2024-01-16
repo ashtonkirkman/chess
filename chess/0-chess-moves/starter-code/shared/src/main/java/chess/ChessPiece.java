@@ -1,7 +1,5 @@
 package chess;
 
-import java.util.Collection;
-
 /**
  * Represents a single chess piece
  * <p>
