@@ -84,5 +84,26 @@ public class ChessBoard {
                 boardPieces[i][j] = null;
             }
         }
+
+        ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
+        ChessGame.TeamColor black = ChessGame.TeamColor.BLACK;
+
+        ChessPiece.PieceType rook = ChessPiece.PieceType.ROOK;
+        ChessPiece.PieceType pawn = ChessPiece.PieceType.PAWN;
+        ChessPiece.PieceType knight = ChessPiece.PieceType.KNIGHT;
+        ChessPiece.PieceType bishop = ChessPiece.PieceType.BISHOP;
+        ChessPiece.PieceType queen = ChessPiece.PieceType.QUEEN;
+        ChessPiece.PieceType king = ChessPiece.PieceType.KING;
+
+        ChessPiece whiteARook = new ChessPiece(white, rook);
+        ChessPiece whiteBKnight = new ChessPiece(white, knight);
+        ChessPiece whiteCBishop = new ChessPiece(white, bishop);
+        ChessPiece whiteQueen = new ChessPiece(white, queen);
+        ChessPiece whiteKing = new ChessPiece(white, king);
+        ChessPiece whiteFBishop = new ChessPiece(white, bishop);
+        ChessPiece whiteGKnight = new ChessPiece(white, knight);
+        ChessPiece whiteHRook = new ChessPiece(white, rook);
+
+        addPiece(a1, whiteARook);
     }
 }
