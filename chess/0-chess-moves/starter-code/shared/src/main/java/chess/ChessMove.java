@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Objects;
+
 /**
  * Represents moving a chess piece on a chessboard
  * <p>
@@ -41,5 +43,84 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
         return this.promotionPiece;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChessMove chessMove)) return false;
+        return Objects.equals(startPosition, chessMove.startPosition) && Objects.equals(endPosition, chessMove.endPosition) && promotionPiece == chessMove.promotionPiece;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startPosition, endPosition, promotionPiece);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        int row = endPosition.getRow();
+        int column = endPosition.getColumn();
+        ChessPiece.PieceType promotionPiece = this.promotionPiece;
+
+        switch(column) {
+            case 1:
+                sb.append("a");
+                break;
+            case 2:
+                sb.append("b");
+                break;
+            case 3:
+                sb.append("c");
+                break;
+            case 4:
+                sb.append("d");
+                break;
+            case 5:
+                sb.append("e");
+                break;
+            case 6:
+                sb.append("f");
+                break;
+            case 7:
+                sb.append("g");
+                break;
+            case 8:
+                sb.append("h");
+                break;
+
+        }
+        switch(row) {
+            case 1:
+                sb.append("1");
+                break;
+            case 2:
+                sb.append("2");
+                break;
+            case 3:
+                sb.append("3");
+                break;
+            case 4:
+                sb.append("4");
+                break;
+            case 5:
+                sb.append("5");
+                break;
+            case 6:
+                sb.append("6");
+                break;
+            case 7:
+                sb.append("7");
+                break;
+            case 8:
+                sb.append("8");
+                break;
+        }
+
+        if(promotionPiece != null) sb.append(" - ").append(promotionPiece);
+
+        return sb.toString();
     }
 }

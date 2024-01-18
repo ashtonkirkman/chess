@@ -15,23 +15,10 @@ public class ChessBoard {
 
     public static void main(String[] args) {
         ChessBoard myBoard = new ChessBoard();
-        myBoard.displayBoard();
-    }
-
-    public void displayBoard() {
-        for (int i = boardSize - 1; i >= 0; i--) {
-            for (int j = 0; j < boardSize; j++) {
-                ChessPiece currentPiece = this.getPiece(new ChessPosition(i + 1, j + 1));
-
-                if (currentPiece != null) {
-                    String pieceColor = (currentPiece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "W" : "B";
-                    System.out.print(pieceColor + "-" + currentPiece.getPieceType() + " ");
-                } else {
-                    System.out.print("Empty ");
-                }
-            }
-            System.out.println(); // Moves to the next row after printing 1 row
-        }
+        myBoard.resetBoard();
+        myBoard.addPiece(new ChessPosition(4, 4), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        System.out.print(myBoard);
+        System.out.println();
     }
 
     public ChessBoard() {
@@ -149,5 +136,26 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(boardPieces);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = boardSize - 1; i >= 0; i--) {
+            sb.append("|");
+            for (int j = 0; j < boardSize; j++) {
+                ChessPiece currentPiece = this.getPiece(new ChessPosition(i+1, j+1));
+                if (currentPiece != null) {
+                    sb.append(currentPiece).append("|");
+                }
+                else {
+                    sb.append(" |");
+                }
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }
