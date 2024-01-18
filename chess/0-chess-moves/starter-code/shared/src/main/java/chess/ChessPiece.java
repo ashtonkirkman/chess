@@ -1,6 +1,5 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -18,11 +17,11 @@ public class ChessPiece {
 
     public static void main(String[] args) {
         ChessBoard myBoard = new ChessBoard();
-        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.PAWN));
+        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.KING));
         myBoard.addPiece(new ChessPosition(7, 4), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
-        myBoard.addPiece(new ChessPosition(8, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.ROOK));
+        myBoard.addPiece(new ChessPosition(8, 8), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.KING));
         myBoard.addPiece(new ChessPosition(8, 5), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
-        ChessPosition piecePosition = new ChessPosition(7, 4);
+        ChessPosition piecePosition = new ChessPosition(8, 8);
         ChessPiece testPiece = myBoard.getPiece(piecePosition);
         Collection<ChessMove> availableMoves = testPiece.pieceMoves(myBoard, piecePosition);
         for(ChessMove move: availableMoves) {
@@ -83,18 +82,22 @@ public class ChessPiece {
         return false;
     }
 
-    private void movePawn(Collection<ChessMove> validMoves, ChessGame.TeamColor color, ChessPosition myPosition, ChessPosition endPosition) {
+    private void movePawn(Collection<ChessMove> validMoves, ChessGame.TeamColor color, ChessPosition myPosition, ChessPosition destination) {
         int rank = myPosition.getRow();
 
         if(rank == (isWhite(color) ? 7 : 2)) {
-            validMoves.add(new ChessMove(myPosition, endPosition, PieceType.QUEEN));
-            validMoves.add(new ChessMove(myPosition, endPosition, PieceType.KNIGHT));
-            validMoves.add(new ChessMove(myPosition, endPosition, PieceType.BISHOP));
-            validMoves.add(new ChessMove(myPosition, endPosition, PieceType.ROOK));
+            validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
+            validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
+            validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
+            validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
         }
         else {
-            validMoves.add(new ChessMove(myPosition, endPosition, null));
+            validMoves.add(new ChessMove(myPosition, destination, null));
         }
+    }
+
+    private boolean isInBounds(int rank, int file) {
+        return (rank <= 8 && rank >= 1) && (file <= 8 && file >= 1);
     }
 
     private boolean isWhite(ChessGame.TeamColor color) {
@@ -116,13 +119,15 @@ public class ChessPiece {
 
         ChessPiece.PieceType currentPiece = getPieceType();
         ChessGame.TeamColor currentColor = getTeamColor();
+        ChessPiece targetPiece = null;
+        ChessPosition destination = null;
 
         // Implementation for a pawn
         switch (currentPiece) {
             case PAWN:
                 // Move pawn forward
                 ChessPosition oneForward = (isWhite(currentColor) ? new ChessPosition(currentRow+1, currentColumn) : new ChessPosition(currentRow-1, currentColumn));
-                ChessPiece targetPiece = board.getPiece(oneForward);
+                targetPiece = board.getPiece(oneForward);
                 if(isValidMove(oneForward, board) && targetPiece == null) {
                     movePawn(validMoves, currentColor, myPosition, oneForward);
 
@@ -156,6 +161,16 @@ public class ChessPiece {
                 break;
 
             case KING:
+                for(int i = -1; i <= 1; i++) {
+                    for(int j = -1; j <= 1; j++) {
+                        if (isInBounds(currentRow+i, currentColumn+j)) {
+                            destination = new ChessPosition(currentRow + i, currentColumn + j);
+                            if(isValidMove(destination, board)) {
+                                validMoves.add(new ChessMove(myPosition, destination, null));
+                            }
+                        }
+                    }
+                }
                 break;
 
             case QUEEN:
