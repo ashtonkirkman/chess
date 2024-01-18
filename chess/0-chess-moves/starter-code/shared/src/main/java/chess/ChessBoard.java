@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Arrays;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -11,8 +13,33 @@ public class ChessBoard {
     private static final int boardSize = 8;
     private ChessPiece boardPieces[][] = new ChessPiece[boardSize][boardSize];  // dataType[][] arrayName = new dataType[rows][columns];
 
+    public static void main(String[] args) {
+        ChessBoard myBoard = new ChessBoard();
+        myBoard.displayBoard();
+    }
+
+    public void displayBoard() {
+        for (int i = boardSize - 1; i >= 0; i--) {
+            for (int j = 0; j < boardSize; j++) {
+                ChessPiece currentPiece = this.getPiece(new ChessPosition(i + 1, j + 1));
+
+                if (currentPiece != null) {
+                    String pieceColor = (currentPiece.getTeamColor() == ChessGame.TeamColor.WHITE) ? "W" : "B";
+                    System.out.print(pieceColor + "-" + currentPiece.getPieceType() + " ");
+                } else {
+                    System.out.print("Empty ");
+                }
+            }
+            System.out.println(); // Moves to the next row after printing 1 row
+        }
+    }
+
     public ChessBoard() {
-        resetBoard();
+        for(int i = 0; i < boardSize; i++) {
+            for(int j = 0; j < boardSize; j++) {
+                boardPieces[i][j] = null;
+            }
+        }
     }
 
     /**
@@ -100,5 +127,27 @@ public class ChessBoard {
             addPiece(positions[7][i], blackPieces[i]);      // Fill up the 8th rank with black's mains
             addPiece(positions[6][i], blackPieces[i+8]);    // Fill up the 7th rank with black's pawns
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ChessBoard that)) return false;
+        for(int i = 0; i < boardSize; i++) {
+            for(int j = 0; j < boardSize; j++) {
+                if(this.boardPieces[i][j] == null && that.boardPieces[i][j] != null) {
+                    return false;
+                }
+                else if(this.boardPieces[i][j] != null && !this.boardPieces[i][j].equals(that.boardPieces[i][j])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(boardPieces);
     }
 }

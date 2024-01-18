@@ -42,7 +42,9 @@ public class ChessBoardTests {
         var actualBoard = getNewBoard();
         actualBoard.resetBoard();
 
+        expectedBoard.displayBoard();
+        actualBoard.displayBoard();
+
         Assertions.assertEquals(expectedBoard, actualBoard);
     }
-
 }
