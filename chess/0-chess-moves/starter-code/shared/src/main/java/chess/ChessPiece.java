@@ -17,11 +17,11 @@ public class ChessPiece {
 
     public static void main(String[] args) {
         ChessBoard myBoard = new ChessBoard();
-        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.KING));
-        myBoard.addPiece(new ChessPosition(7, 4), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
+        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.KNIGHT));
+        myBoard.addPiece(new ChessPosition(4, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
         myBoard.addPiece(new ChessPosition(8, 8), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.KING));
         myBoard.addPiece(new ChessPosition(8, 5), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
-        ChessPosition piecePosition = new ChessPosition(8, 8);
+        ChessPosition piecePosition = new ChessPosition(2, 4);
         ChessPiece testPiece = myBoard.getPiece(piecePosition);
         Collection<ChessMove> availableMoves = testPiece.pieceMoves(myBoard, piecePosition);
         for(ChessMove move: availableMoves) {
@@ -155,6 +155,20 @@ public class ChessPiece {
                 break;
 
             case KNIGHT:
+                // (row + 2, column + 1) (row + 2, column - 1) (row + 1, column +2) (row-1, column+2) (row+1, column-2) (row-1, column-2) (row-2, column-1) (row-2, column+1)
+                for(int i = -2; i <= 2; i++) {  // row increment
+                    for(int j = -2; j <= 2; j++) { // column increment
+                        // Rewrite the following if statement to be more concise
+                        if(!(j == 0 || i == 0 || (Math.abs(j) == 1 && Math.abs(i) == 1) || (Math.abs(j) == 2 && Math.abs(i) == 2))) {
+                            if(isInBounds(currentRow + i, currentColumn + j)) {
+                                destination = new ChessPosition(currentRow + i, currentColumn + j);
+                                if(isValidMove(destination, board)) {
+                                    validMoves.add(new ChessMove(myPosition, destination, null));
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
 
             case BISHOP:
