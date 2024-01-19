@@ -17,8 +17,8 @@ public class ChessPiece {
 
     public static void main(String[] args) {
         ChessBoard myBoard = new ChessBoard();
-        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.KNIGHT));
-        myBoard.addPiece(new ChessPosition(4, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
+        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.BISHOP));
+        myBoard.addPiece(new ChessPosition(3, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
         myBoard.addPiece(new ChessPosition(8, 8), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.KING));
         myBoard.addPiece(new ChessPosition(8, 5), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
         ChessPosition piecePosition = new ChessPosition(2, 4);
@@ -80,6 +80,11 @@ public class ChessPiece {
         }
 
         return false;
+    }
+
+    private boolean isPiece(ChessPosition destination, ChessBoard board) {
+        ChessPiece targetPiece = board.getPiece(destination);
+        return targetPiece != null;
     }
 
     private void movePawn(Collection<ChessMove> validMoves, ChessGame.TeamColor color, ChessPosition myPosition, ChessPosition destination) {
@@ -155,7 +160,6 @@ public class ChessPiece {
                 break;
 
             case KNIGHT:
-                // (row + 2, column + 1) (row + 2, column - 1) (row + 1, column +2) (row-1, column+2) (row+1, column-2) (row-1, column-2) (row-2, column-1) (row-2, column+1)
                 for(int i = -2; i <= 2; i++) {  // row increment
                     for(int j = -2; j <= 2; j++) { // column increment
                         // Rewrite the following if statement to be more concise
@@ -172,6 +176,67 @@ public class ChessPiece {
                 break;
 
             case BISHOP:
+                //(row-1, column-1), (row-2, column-2), (row-3, column-3), (row-4, column-4), (row-5, column-5), (row-6, column-6), (row-7, column-7)
+                //(row+1, column+1), (row+2, column+2), (row+3, column+3), (row+4, column+4), (row+5, column+5), (row+6, column+6), (row+7, column+7)
+                //(row-1, column+1), (row-2, column+2), (row-3, column+3), (row-4, column+4), (row-5, column+5), (row-6, column+6), (row-7, column+7)
+                //(row+1, column-1), (row+2, column-2), (row+3, column-3), (row+4, column-4), (row+5, column-5), (row+6, column-6), (row+7, column-7)
+                // if a piece is in the way, stop
+                for(int i = 1; i <= 7; i++) {
+                    if(isInBounds(currentRow+i, currentColumn+i)) {
+                        destination = new ChessPosition(currentRow + i, currentColumn + i);
+                        if(isValidMove(destination, board)) {
+                            validMoves.add(new ChessMove(myPosition, destination, null));
+                            if(isPiece(destination, board)) {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                for(int i = 1; i <= 7; i++) {
+                    if(isInBounds(currentRow-i, currentColumn-i)) {
+                        destination = new ChessPosition(currentRow - i, currentColumn - i);
+                        if(isValidMove(destination, board)) {
+                            validMoves.add(new ChessMove(myPosition, destination, null));
+                            if(isPiece(destination, board)) {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                for(int i = 1; i <= 7; i++) {
+                    if(isInBounds(currentRow+i, currentColumn-i)) {
+                        destination = new ChessPosition(currentRow + i, currentColumn - i);
+                        if(isValidMove(destination, board)) {
+                            validMoves.add(new ChessMove(myPosition, destination, null));
+                            if(isPiece(destination, board)) {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
+                for(int i = 1; i <= 7; i++) {
+                    if(isInBounds(currentRow-i, currentColumn+i)) {
+                        destination = new ChessPosition(currentRow - i, currentColumn + i);
+                        if(isValidMove(destination, board)) {
+                            validMoves.add(new ChessMove(myPosition, destination, null));
+                            if(isPiece(destination, board)) {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                }
                 break;
 
             case KING:
