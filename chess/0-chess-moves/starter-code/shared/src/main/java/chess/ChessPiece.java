@@ -17,8 +17,8 @@ public class ChessPiece {
 
     public static void main(String[] args) {
         ChessBoard myBoard = new ChessBoard();
-        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.QUEEN));
-        myBoard.addPiece(new ChessPosition(3, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
+        myBoard.addPiece(new ChessPosition(2, 4), new ChessPiece(ChessGame.TeamColor.WHITE, PieceType.ROOK));
+        myBoard.addPiece(new ChessPosition(2, 3), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
         myBoard.addPiece(new ChessPosition(8, 8), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.KING));
         myBoard.addPiece(new ChessPosition(8, 5), new ChessPiece(ChessGame.TeamColor.BLACK, PieceType.PAWN));
         ChessPosition piecePosition = new ChessPosition(2, 4);
@@ -236,6 +236,29 @@ public class ChessPiece {
                 break;
 
             case ROOK:
+                for(int i = -1; i <= 1; i++) {
+                    for(int j = -1; j <= 1; j++) {
+                        if(!(i == 0 && j == 0) && !(Math.abs(i) == 1 && Math.abs(j) == 1)) {
+                            for(int k = 1; k <= 7; k++) {
+                                int newRow = currentRow + k * i;
+                                int newColumn = currentColumn + k * j;
+
+                                if(isInBounds(newRow, newColumn)) {
+                                    destination = new ChessPosition(newRow, newColumn);
+                                    if(isValidMove(destination, board)) {
+                                        validMoves.add(new ChessMove(myPosition, destination, null));
+                                        if(isPiece(destination, board)) {
+                                            break;
+                                        }
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 break;
 
             default:
