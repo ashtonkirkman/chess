@@ -214,20 +214,22 @@ public class ChessPiece {
             case QUEEN:
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
-                        for(int k = 1; k <= 7; k++) {
-                            int newRow = currentRow + k * i;
-                            int newColumn = currentColumn + k * j;
+                        if(!(i == 0 && j == 0)) {
+                            for(int k = 1; k <= 7; k++) {
+                                int newRow = currentRow + k * i;
+                                int newColumn = currentColumn + k * j;
 
-                            if(isInBounds(newRow, newColumn)) {
-                                destination = new ChessPosition(newRow, newColumn);
-                                if(isValidMove(destination, board)) {
-                                    validMoves.add(new ChessMove(myPosition, destination, null));
-                                    if(isPiece(destination, board)) {
+                                if(isInBounds(newRow, newColumn)) {
+                                    destination = new ChessPosition(newRow, newColumn);
+                                    if(isValidMove(destination, board)) {
+                                        validMoves.add(new ChessMove(myPosition, destination, null));
+                                        if(isPiece(destination, board)) {
+                                            break;
+                                        }
+                                    }
+                                    else {
                                         break;
                                     }
-                                }
-                                else {
-                                    break;
                                 }
                             }
                         }
