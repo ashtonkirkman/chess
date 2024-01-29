@@ -63,7 +63,6 @@ public class ChessMove {
 
         int row = endPosition.getRow();
         int column = endPosition.getColumn();
-        ChessPiece.PieceType promotionPiece = this.promotionPiece;
 
         switch(column) {
             case 1:

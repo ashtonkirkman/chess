@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class ChessPiece {
 
-    private ChessGame.TeamColor pieceColor;
+    private ChessGame.TeamColor color;
     private PieceType type;
 
     public static void main(String[] args) {
@@ -32,8 +32,8 @@ public class ChessPiece {
         System.out.println();
    }
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.pieceColor = pieceColor;
+    public ChessPiece(ChessGame.TeamColor color, ChessPiece.PieceType type) {
+        this.color = color;
         this.type = type;
     }
 
@@ -53,7 +53,7 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return this.pieceColor;
+        return this.color;
     }
 
     /**
@@ -68,45 +68,38 @@ public class ChessPiece {
         }
     }
 
-    private boolean isValidMove(ChessPosition myPosition, ChessBoard board) {
-        // Rules: there cannot be a piece of the same color in the position I want to move
-        // The piece cannot move off the board
-        int row = myPosition.getRow();
-        int column = myPosition.getColumn();
-        ChessPiece targetPiece = board.getPiece(myPosition);
+    private boolean isValidMove(ChessPiece destinationPiece, ChessPosition destination) {
+        int rank = destination.getRow();
+        int file = destination.getColumn();
 
-        if (row >= 1 && row <= 8 && column >= 1 && column <= 8) {
-            return targetPiece == null || targetPiece.pieceColor != this.pieceColor;
+        if(rank >= 1 && rank <= 8 && file >= 1 && file <= 8) {
+            return destinationPiece == null || destinationPiece.getTeamColor() != this.color;
         }
 
         return false;
     }
 
-    private boolean isPiece(ChessPosition destination, ChessBoard board) {
-        ChessPiece targetPiece = board.getPiece(destination);
-        return targetPiece != null;
-    }
-
-    private void movePawn(Collection<ChessMove> validMoves, ChessGame.TeamColor color, ChessPosition myPosition, ChessPosition destination) {
-        int rank = myPosition.getRow();
-
-        if(rank == (isWhite(color) ? 7 : 2)) {
-            validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
-            validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
-            validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
-            validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
-        }
-        else {
-            validMoves.add(new ChessMove(myPosition, destination, null));
-        }
-    }
-
     private boolean isInBounds(int rank, int file) {
-        return (rank <= 8 && rank >= 1) && (file <= 8 && file >= 1);
+        return rank >= 1 && rank <= 8 && file >= 1 && file <= 8;
     }
 
-    private boolean isWhite(ChessGame.TeamColor color) {
-        return color == ChessGame.TeamColor.WHITE;
+    private void addMove(Collection<ChessMove> validMoves, ChessPosition myPosition, ChessPosition destination) {
+        int rank = destination.getRow();
+
+        if(this.type == ChessPiece.PieceType.PAWN) {
+            if(rank == 1 || rank == 8) {
+                validMoves.add(new ChessMove(myPosition, destination, PieceType.KNIGHT));
+                validMoves.add(new ChessMove(myPosition, destination, PieceType.QUEEN));
+                validMoves.add(new ChessMove(myPosition, destination, PieceType.BISHOP));
+                validMoves.add(new ChessMove(myPosition, destination, PieceType.ROOK));
+            }
+            else validMoves.add(new ChessMove(myPosition, destination, null));
+        }
+        else validMoves.add(new ChessMove(myPosition, destination, null));
+    }
+
+    private boolean isWhite() {
+        return this.color == ChessGame.TeamColor.WHITE;
     }
 
     /**
@@ -119,80 +112,37 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> validMoves = new HashSet<>();
 
-        int currentRow = myPosition.getRow();
-        int currentColumn = myPosition.getColumn();
+        int currentRank = myPosition.getRow();
+        int currentFile = myPosition.getColumn();
 
-        ChessPiece.PieceType currentPiece = getPieceType();
-        ChessGame.TeamColor currentColor = getTeamColor();
-        ChessPiece targetPiece = null;
-        ChessPosition destination = null;
+        ChessPiece destinationPiece;
+        ChessPosition destination;
+        ChessPiece currentPiece = board.getPiece(myPosition);
+        PieceType currentType = currentPiece.getPieceType();
 
-        // Implementation for a pawn
-        switch (currentPiece) {
+        switch(currentType) {
             case PAWN:
                 // Move pawn forward
-                ChessPosition oneForward = (isWhite(currentColor) ? new ChessPosition(currentRow+1, currentColumn) : new ChessPosition(currentRow-1, currentColumn));
-                targetPiece = board.getPiece(oneForward);
-                if(isValidMove(oneForward, board) && targetPiece == null) {
-                    movePawn(validMoves, currentColor, myPosition, oneForward);
-
-                    //Given the pawn can move one forward, check if it can move two forward.
-                    if(isWhite(currentColor) ? currentRow == 2 : currentRow == 7) {
-                        ChessPosition twoForward = (isWhite(currentColor) ? new ChessPosition(currentRow + 2, currentColumn) : new ChessPosition(currentRow - 2, currentColumn));
-                        targetPiece = board.getPiece(twoForward);
-                        if(isValidMove(twoForward, board) && targetPiece == null) {
-                            movePawn(validMoves, currentColor, myPosition, twoForward);
+                destination = new ChessPosition(isWhite() ? currentRank + 1 : currentRank - 1, currentFile);
+                destinationPiece = board.getPiece(destination);
+                if(isValidMove(destinationPiece, destination) && destinationPiece == null) {
+                    addMove(validMoves, myPosition, destination);
+                    if(currentRank == (isWhite() ? 2 : 7)) {
+                        destination = new ChessPosition(isWhite() ? currentRank + 2 : currentRank - 2, currentFile);
+                        destinationPiece = board.getPiece(destination);
+                        if(isValidMove(destinationPiece, destination) && destinationPiece == null) {
+                            addMove(validMoves, myPosition, destination);
                         }
                     }
                 }
-                // Capture diagonally right
-                ChessPosition diagonalRight = (isWhite(currentColor) ? new ChessPosition(currentRow+1, currentColumn+1) : new ChessPosition(currentRow-1, currentColumn-1));
-                targetPiece = board.getPiece(diagonalRight);
-                if(isValidMove(diagonalRight, board) && targetPiece != null) {
-                    movePawn(validMoves, currentColor, myPosition, diagonalRight);
-                }
-                // Capture diagonally left
-                ChessPosition diagonalLeft = (isWhite(currentColor) ? new ChessPosition(currentRow+1, currentColumn-1) : new ChessPosition(currentRow - 1, currentColumn + 1));
-                targetPiece = board.getPiece(diagonalLeft);
-                if(isValidMove(diagonalLeft, board) && targetPiece != null){
-                    movePawn(validMoves, currentColor, myPosition, diagonalLeft);
-                }
-                break;
 
-            case KNIGHT:
-                for(int i = -2; i <= 2; i++) {  // row increment
-                    for(int j = -2; j <= 2; j++) { // column increment
-                        // Rewrite the following if statement to be more concise
-                        if(!(j == 0 || i == 0 || (Math.abs(j) == 1 && Math.abs(i) == 1) || (Math.abs(j) == 2 && Math.abs(i) == 2))) {
-                            if(isInBounds(currentRow + i, currentColumn + j)) {
-                                destination = new ChessPosition(currentRow + i, currentColumn + j);
-                                if(isValidMove(destination, board)) {
-                                    validMoves.add(new ChessMove(myPosition, destination, null));
-                                }
-                            }
-                        }
-                    }
-                }
-                break;
-
-            case BISHOP:
-                for (int i = -1; i <= 1; i += 2) {
-                    for (int j = -1; j <= 1; j += 2) {
-                        for (int k = 1; k <= 7; k++) {
-                            int newRow = currentRow + k * i;
-                            int newColumn = currentColumn + k * j;
-
-                            if (isInBounds(newRow, newColumn)) {
-                                destination = new ChessPosition(newRow, newColumn);
-                                if (isValidMove(destination, board)) {
-                                    validMoves.add(new ChessMove(myPosition, destination, null));
-                                    if (isPiece(destination, board)) {
-                                        break;
-                                    }
-                                } else {
-                                    break;
-                                }
-                            }
+                // Capture with pawn
+                for(int i = -1; i <= 1; i = i + 2) {
+                    if(isInBounds(isWhite() ? currentRank + 1 : currentRank - 1, currentFile + i)) {
+                        destination = new ChessPosition(isWhite() ? currentRank + 1 : currentRank - 1, currentFile + i);
+                        destinationPiece = board.getPiece(destination);
+                        if(isValidMove(destinationPiece, destination) && destinationPiece != null) {
+                            addMove(validMoves, myPosition, destination);
                         }
                     }
                 }
@@ -201,10 +151,11 @@ public class ChessPiece {
             case KING:
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
-                        if (isInBounds(currentRow+i, currentColumn+j)) {
-                            destination = new ChessPosition(currentRow + i, currentColumn + j);
-                            if(isValidMove(destination, board)) {
-                                validMoves.add(new ChessMove(myPosition, destination, null));
+                        if(isInBounds(currentRank + i, currentFile + j) && !(i == 0 && j == 0)) {
+                            destination = new ChessPosition(currentRank + i, currentFile + j);
+                            destinationPiece = board.getPiece(destination);
+                            if(isValidMove(destinationPiece, destination)) {
+                                addMove(validMoves, myPosition, destination);
                             }
                         }
                     }
@@ -214,24 +165,38 @@ public class ChessPiece {
             case QUEEN:
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
-                        if(!(i == 0 && j == 0)) {
-                            for(int k = 1; k <= 7; k++) {
-                                int newRow = currentRow + k * i;
-                                int newColumn = currentColumn + k * j;
+                        for(int k = 1; k <= 7; k++) {
+                            int newRank = currentRank + k*i;
+                            int newFile = currentFile + k*j;
 
-                                if(isInBounds(newRow, newColumn)) {
-                                    destination = new ChessPosition(newRow, newColumn);
-                                    if(isValidMove(destination, board)) {
-                                        validMoves.add(new ChessMove(myPosition, destination, null));
-                                        if(isPiece(destination, board)) {
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        break;
-                                    }
-                                }
+                            if((i == 0 && j == 0) || !isInBounds(newRank, newFile)) break;
+                            destination = new ChessPosition(newRank, newFile);
+                            destinationPiece = board.getPiece(destination);
+                            if(isValidMove(destinationPiece, destination)) {
+                                addMove(validMoves, myPosition, destination);
+                                if(destinationPiece != null) break;
                             }
+                            else break;
+                        }
+                    }
+                }
+                break;
+
+            case BISHOP:
+                for(int i = -1; i <= 1; i = i + 2) {
+                    for(int j = -1; j <= 1; j = j + 2) {
+                        for(int k = 1; k <= 7; k++) {
+                            int newRank = currentRank + k*i;
+                            int newFile = currentFile + k*j;
+
+                            if(!isInBounds(newRank, newFile)) break;
+                            destination = new ChessPosition(newRank, newFile);
+                            destinationPiece = board.getPiece(destination);
+                            if(isValidMove(destinationPiece, destination)) {
+                                addMove(validMoves, myPosition, destination);
+                                if(destinationPiece != null) break;
+                            }
+                            else break;
                         }
                     }
                 }
@@ -240,30 +205,38 @@ public class ChessPiece {
             case ROOK:
                 for(int i = -1; i <= 1; i++) {
                     for(int j = -1; j <= 1; j++) {
-                        if(!(i == 0 && j == 0) && !(Math.abs(i) == 1 && Math.abs(j) == 1)) {
-                            for(int k = 1; k <= 7; k++) {
-                                int newRow = currentRow + k * i;
-                                int newColumn = currentColumn + k * j;
+                        for(int k = 1; k <= 7; k++) {
+                            int newRank = currentRank + k*i;
+                            int newFile = currentFile + k*j;
 
-                                if(isInBounds(newRow, newColumn)) {
-                                    destination = new ChessPosition(newRow, newColumn);
-                                    if(isValidMove(destination, board)) {
-                                        validMoves.add(new ChessMove(myPosition, destination, null));
-                                        if(isPiece(destination, board)) {
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        break;
-                                    }
-                                }
+                            if((Math.abs(i) == 1 && Math.abs(j) == 1) || (i == 0 && j == 0) || !isInBounds(newRank, newFile)) break;
+                            destination = new ChessPosition(newRank, newFile);
+                            destinationPiece = board.getPiece(destination);
+                            if(isValidMove(destinationPiece, destination)) {
+                                addMove(validMoves, myPosition, destination);
+                                if(destinationPiece != null) break;
                             }
+                            else break;
                         }
                     }
                 }
                 break;
 
-            default:
+            case KNIGHT:
+                for(int i = -2; i <= 2; i++) {
+                    for(int j = -2; j <= 2; j++) {
+                        int newRank = currentRank + i;
+                        int newFile = currentFile + j;
+
+                        if(((Math.abs(i) == 1 && Math.abs(j) == 2) || (Math.abs(i) == 2 && Math.abs(j) == 1)) && isInBounds(newRank, newFile)) {
+                            destination = new ChessPosition(newRank, newFile);
+                            destinationPiece = board.getPiece(destination);
+                            if (isValidMove(destinationPiece, destination)) {
+                                addMove(validMoves, myPosition, destination);
+                            }
+                        }
+                    }
+                }
                 break;
         }
 
@@ -274,12 +247,12 @@ public class ChessPiece {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ChessPiece that)) return false;
-        return pieceColor == that.pieceColor && type == that.type;
+        return color == that.color && type == that.type;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pieceColor, type);
+        return Objects.hash(color, type);
     }
 
     @Override
@@ -287,27 +260,27 @@ public class ChessPiece {
         StringBuilder sb = new StringBuilder();
         switch(type) {
             case PAWN:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "P" : "p");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "P" : "p");
                 break;
 
             case KING:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "K" : "k");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "K" : "k");
                 break;
 
             case QUEEN:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "Q" : "q");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "Q" : "q");
                 break;
 
             case ROOK:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "R" : "r");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "R" : "r");
                 break;
 
             case BISHOP:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "B" : "b");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "B" : "b");
                 break;
 
             case KNIGHT:
-                sb.append(pieceColor.equals(ChessGame.TeamColor.WHITE) ? "N" : "n");
+                sb.append(color.equals(ChessGame.TeamColor.WHITE) ? "N" : "n");
                 break;
 
             default:
