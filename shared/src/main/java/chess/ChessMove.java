@@ -61,10 +61,12 @@ public class ChessMove {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        int row = endPosition.getRow();
-        int column = endPosition.getColumn();
+        int startRow = startPosition.getRow();
+        int startColumn = startPosition.getColumn();
+        int endRow = endPosition.getRow();
+        int endColumn = endPosition.getColumn();
 
-        switch(column) {
+        switch(startColumn) {
             case 1:
                 sb.append("a");
                 break;
@@ -91,7 +93,60 @@ public class ChessMove {
                 break;
 
         }
-        switch(row) {
+        switch(startRow) {
+            case 1:
+                sb.append("1");
+                break;
+            case 2:
+                sb.append("2");
+                break;
+            case 3:
+                sb.append("3");
+                break;
+            case 4:
+                sb.append("4");
+                break;
+            case 5:
+                sb.append("5");
+                break;
+            case 6:
+                sb.append("6");
+                break;
+            case 7:
+                sb.append("7");
+                break;
+            case 8:
+                sb.append("8");
+                break;
+        }
+        sb.append(" to ");
+        switch(endColumn) {
+            case 1:
+                sb.append("a");
+                break;
+            case 2:
+                sb.append("b");
+                break;
+            case 3:
+                sb.append("c");
+                break;
+            case 4:
+                sb.append("d");
+                break;
+            case 5:
+                sb.append("e");
+                break;
+            case 6:
+                sb.append("f");
+                break;
+            case 7:
+                sb.append("g");
+                break;
+            case 8:
+                sb.append("h");
+                break;
+        }
+        switch(endRow) {
             case 1:
                 sb.append("1");
                 break;
