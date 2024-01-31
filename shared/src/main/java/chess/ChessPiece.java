@@ -53,7 +53,12 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        return this.color;
+        if(this.type == null) {
+            return null;
+        }
+        else{
+            return this.color;
+        }
     }
 
     /**
