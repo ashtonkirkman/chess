@@ -68,13 +68,12 @@ public class ChessGame {
         myGame.setBoard(currentBoard);
         System.out.println(myGame);
 
-        currentBoard.addPiece(d[7], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
-        myGame.setBoard(currentBoard);
-        System.out.println(myGame);
-        myGame.teamTurn = TeamColor.BLACK;
-        System.out.println(myGame);
-        System.out.println(myGame.isInCheckmate(TeamColor.BLACK));
-        System.out.println(myGame.validMoves(d[8]));
+        try {
+            myGame.makeMove(new ChessMove(e[7], e[8], ChessPiece.PieceType.BISHOP));
+        } catch (InvalidMoveException ex) {
+            System.out.println(ex.getMessage());
+        }
+
         System.out.println(myGame);
     }
 
@@ -107,6 +106,11 @@ public class ChessGame {
         ChessPosition destination = move.getEndPosition();
         ChessPiece currentPiece = board.getPiece(startPosition);
         ChessPiece destinationPiece = board.getPiece(destination);
+        ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
+
+        if(promotionPiece != null) {
+            currentPiece = new ChessPiece(currentPiece.getTeamColor(), promotionPiece);
+        }
 
         board.addPiece(destination, currentPiece);
         board.addPiece(startPosition, null);
@@ -158,6 +162,12 @@ public class ChessGame {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition destination = move.getEndPosition();
         ChessPiece currentPiece = board.getPiece(startPosition);
+        ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
+
+        if(promotionPiece != null) {
+            currentPiece = new ChessPiece(currentPiece.getTeamColor(), promotionPiece);
+        }
+
         Collection<ChessMove> validMoves = this.validMoves(startPosition);
         if (currentPiece == null) {
             throw new InvalidMoveException("Selected Piece is null");
