@@ -17,9 +17,8 @@ public class ChessGame {
 
     public ChessGame() {
         this.teamTurn = TeamColor.WHITE;
-        ChessBoard board = new ChessBoard();
-        board.resetBoard();
-        setBoard(board);
+        this.board = new ChessBoard();
+        this.board.resetBoard();
     }
 
     public static void main(String[] args) {
@@ -45,14 +44,37 @@ public class ChessGame {
 
         ChessGame myGame = new ChessGame();
         ChessBoard currentBoard = myGame.getBoard();
-        try {
-            myGame.makeMove(new ChessMove(f[2], f[4], null));
-            myGame.makeMove(new ChessMove(e[7], e[6], null));
-            myGame.makeMove(new ChessMove(g[2], g[4], null));
-            myGame.makeMove(new ChessMove(d[8], h[4], null));
-        } catch(InvalidMoveException ex) {
-            System.out.println(ex.getMessage());
-        }
+        currentBoard.clearBoard();
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(b[6], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(e[6], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(e[7], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(f[6], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(d[8], new ChessPiece(TeamColor.BLACK, ChessPiece.PieceType.KING));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+
+        currentBoard.addPiece(d[7], new ChessPiece(TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        myGame.setBoard(currentBoard);
+        System.out.println(myGame);
+        myGame.teamTurn = TeamColor.BLACK;
+        System.out.println(myGame);
+        System.out.println(myGame.isInCheckmate(TeamColor.BLACK));
+        System.out.println(myGame.validMoves(d[8]));
         System.out.println(myGame);
     }
 
@@ -80,20 +102,24 @@ public class ChessGame {
         BLACK
     }
 
-    private void testMove(ChessMove move) {
+    private ChessPiece testMove(ChessMove move) {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition destination = move.getEndPosition();
         ChessPiece currentPiece = board.getPiece(startPosition);
+        ChessPiece destinationPiece = board.getPiece(destination);
+
         board.addPiece(destination, currentPiece);
         board.addPiece(startPosition, null);
+
+        return destinationPiece;
     }
 
-    private void undoMove(ChessMove move) {
+    private void undoMove(ChessMove move, ChessPiece capturedPiece) {
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition destination = move.getEndPosition();
         ChessPiece currentPiece = board.getPiece(destination);
         board.addPiece(startPosition, currentPiece);
-        board.addPiece(destination, null);
+        board.addPiece(destination, capturedPiece);
     }
 
     /**
@@ -111,12 +137,13 @@ public class ChessGame {
         TeamColor currentColor = currentPiece.getTeamColor();
         Collection<ChessMove> potentiallyValidMoves = currentPiece.pieceMoves(board, startPosition);
         Collection<ChessMove> validMoves = new HashSet<>();
+        ChessPiece capturedPiece;
         for (ChessMove move : potentiallyValidMoves) {
-            this.testMove(move);
+            capturedPiece = this.testMove(move);
             if(!this.isInCheck(currentColor)) {
                 validMoves.add(move);
             }
-            this.undoMove(move);
+            this.undoMove(move, capturedPiece);
         }
         return validMoves;
     }
@@ -184,6 +211,18 @@ public class ChessGame {
                     continue;
                 }
                 if (validMoves.contains(new ChessMove(currentPosition[i][j], kingPosition, null))) {
+                    return true;
+                }
+                else if (validMoves.contains(new ChessMove(currentPosition[i][j], kingPosition, ChessPiece.PieceType.QUEEN))) {
+                    return true;
+                }
+                else if (validMoves.contains(new ChessMove(currentPosition[i][j], kingPosition, ChessPiece.PieceType.ROOK))) {
+                    return true;
+                }
+                else if (validMoves.contains(new ChessMove(currentPosition[i][j], kingPosition, ChessPiece.PieceType.BISHOP))) {
+                    return true;
+                }
+                else if (validMoves.contains(new ChessMove(currentPosition[i][j], kingPosition, ChessPiece.PieceType.KNIGHT))) {
                     return true;
                 }
             }
@@ -291,15 +330,15 @@ public class ChessGame {
 
     @Override
     public String toString() {
-        if(isInCheckmate(TeamColor.WHITE)) {
-            return "Black Wins!\n\n" + board;
-        }
-        else if(isInCheckmate(TeamColor.BLACK)) {
-            return "White Wins!\n\n" + board;
-        }
-        else if(isInStalemate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK)) {
-            return "Stalemate!\n\n" + board;
-        }
+//        if(isInCheckmate(TeamColor.WHITE)) {
+//            return "Black Wins!\n\n" + board;
+//        }
+//        else if(isInCheckmate(TeamColor.BLACK)) {
+//            return "White Wins!\n\n" + board;
+//        }
+//        else if(isInStalemate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK)) {
+//            return "Stalemate!\n\n" + board;
+//        }
 
         return teamTurn + " to Play\n\n" + board;
     }
