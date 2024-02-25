@@ -2,25 +2,46 @@ package dataAccess;
 
 import model.UserData;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UserDAO {
-    // Example method to insert a new user into the data store
-    public void insertUser(UserData user) throws DataAccessException {
-        // Implementation to insert the user into the database
+
+    private Map<String, UserData> users;
+
+    public UserDAO() {
+        this.users = new HashMap<>();
+    }
+
+    public void createUser(UserData user) throws DataAccessException {
+        try {
+            if (users.containsKey(user.username())) {
+                throw new DataAccessException("Error: Username already exists");
+            }
+
+            users.put(user.username(), user);
+        } catch (Exception e) {
+            throw new DataAccessException("Error: Failed to create user");
+        }
     }
 
     // Example method to retrieve a user by username from the data store
-    public UserData getUserByUsername(String username) throws DataAccessException {
-        // Implementation to retrieve the user from the database by username
-        return null; // Placeholder, replace with actual implementation
+    public UserData getUser(String username) throws DataAccessException {
+        try {
+            if (!users.containsKey(username)) {
+                throw new DataAccessException("User with name " + username + " not found");
+            }
+            return users.get(username);
+        } catch (Exception e) {
+            throw new DataAccessException("Error: Failed to get user");
+        }
     }
 
-    // Example method to update an existing user in the data store
-    public void updateUser(UserData user) throws DataAccessException {
-        // Implementation to update the user in the database
-    }
-
-    // Example method to delete a user from the data store
-    public void deleteUser(String username) throws DataAccessException {
-        // Implementation to delete the user from the database
+    public void clear() throws DataAccessException {
+        try {
+            users.clear();
+        } catch (Exception e) {
+            throw new DataAccessException("Error: Failed to clear data");
+        }
     }
 }
