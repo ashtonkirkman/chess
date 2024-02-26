@@ -9,21 +9,16 @@ import java.util.ArrayList;
 
 public class MemoryGameDAO implements GameDAO{
     private Map<Integer, GameData> games;
-    private int nextID;
 
     public MemoryGameDAO() {
         this.games = new HashMap<>();
-        this.nextID = 1;
     }
 
     public void createGame(GameData game) throws DataAccessException {
-        try {
-            game = new GameData(nextID, game.whiteUsername(), game.blackUsername(), game.gameName(), game.game());
-            games.put(nextID, game);
-            nextID++;
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to create game");
+        if(games.containsKey(game.gameID())) {
+            throw new DataAccessException("Error: Game already exists");
         }
+        games.put(game.gameID(), game);
     }
     public GameData getGame(int gameID) throws DataAccessException {
         if (!games.containsKey(gameID)) {
