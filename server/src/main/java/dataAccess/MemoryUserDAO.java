@@ -13,29 +13,28 @@ public class MemoryUserDAO implements UserDAO {
         this.users = new HashMap<>();
     }
 
+    @Override
     public void createUser(UserData user) throws DataAccessException {
-        try {
-            if (users.containsKey(user.username())) {
-                throw new DataAccessException("Error: Username already exists");
-            }
-            users.put(user.username(), user);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to create user");
+        if (users.containsKey(user.username())) {
+            throw new DataAccessException("Error: Username already exists");
         }
+        for (UserData u : users.values()) {
+            if (u.email().equals(user.email())) {
+                throw new DataAccessException("Error: Email already in use");
+            }
+        }
+        users.put(user.username(), user);
     }
 
-    // Example method to retrieve a user by username from the data store
+    @Override
     public UserData getUser(String username) throws DataAccessException {
-        try {
-            if (!users.containsKey(username)) {
-                throw new DataAccessException("User with name " + username + " not found");
-            }
-            return users.get(username);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to get user");
+        if (!users.containsKey(username)) {
+            throw new DataAccessException("Error: Username \"" + username + "\" not found");
         }
+        return users.get(username);
     }
 
+    @Override
     public void clear() throws DataAccessException {
         try {
             users.clear();
