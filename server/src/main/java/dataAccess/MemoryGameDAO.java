@@ -40,7 +40,7 @@ public class MemoryGameDAO implements GameDAO{
         try {
             return new ArrayList<>(games.values());
         } catch (Exception e) {
-            throw new DataAccessException("Failed to list games", e);
+            throw new DataAccessException("Error: Failed to list games");
         }
     }
 
