@@ -26,14 +26,10 @@ public class MemoryGameDAO implements GameDAO{
         }
     }
     public GameData getGame(int gameID) throws DataAccessException {
-        try {
-            if (!games.containsKey(gameID)) {
-                throw new DataAccessException("Game with ID " + gameID + " not found");
-            }
-            return games.get(gameID);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to get game");
+        if (!games.containsKey(gameID)) {
+            throw new DataAccessException("Game with ID " + gameID + " not found");
         }
+        return games.get(gameID);
     }
 
     public List<GameData> listGames() throws DataAccessException {
@@ -45,14 +41,10 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     public void updateGame(GameData game) throws DataAccessException {
-        try {
-            if (!games.containsKey(game.gameID())) {
-                throw new DataAccessException("Game with ID " + game.gameID() + " not found");
-            }
-            games.put(game.gameID(), game);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to update game");
+        if (!games.containsKey(game.gameID())) {
+            throw new DataAccessException("Game with ID \"" + game.gameID() + "\" not found");
         }
+        games.put(game.gameID(), game);
     }
 
     public void clear() throws DataAccessException {
