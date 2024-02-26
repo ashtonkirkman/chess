@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import dataAccess.DataAccessException;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class GameDAOTest {
+public class GameDAOTests {
 
     private GameDAO gameDAO;
     private GameData game;

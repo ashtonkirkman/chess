@@ -1,39 +1,37 @@
 package dataAccess;
 
 import model.AuthData;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.*;
 
 public class MemoryAuthDAO implements AuthDAO{
-    private Map<String, AuthData> authTokens;
+    private List<AuthData> authTokens;
 
     public MemoryAuthDAO() {
-        this.authTokens = new HashMap<>();
+        this.authTokens = new ArrayList<AuthData>();
     }
-    public void createAuth(AuthData auth) throws DataAccessException {
-        if (authTokens.containsKey(auth.authToken())) {
-            throw new DataAccessException("Error: Auth Token already exists");
-        }
-        for (AuthData a : authTokens.values()) {
-            if (a.username().equals(auth.username())) {
+    public String createAuth(String username) throws DataAccessException {
+        for (AuthData a : authTokens) {
+            if (a.username().equals(username)) {
                 throw new DataAccessException("Error: Username already logged in");
             }
         }
-        try {
-            authTokens.put(auth.authToken(), auth);
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to create auth token");
-        }
+        String authToken = UUID.randomUUID().toString();
+        AuthData auth = new AuthData(authToken, username);
+        authTokens.add(auth);
+        return authToken;
     }
     public AuthData getAuth(String authToken) throws DataAccessException {
-        if (!authTokens.containsKey(authToken)) {
-            throw new DataAccessException("Error: Auth Token \"" + authToken + "\" not found");
+        for (AuthData a : authTokens) {
+            if (a.authToken().equals(authToken)) {
+                return a;
+            }
         }
-        return authTokens.get(authToken);
+        throw new DataAccessException("Error: Auth token not found");
     }
     public void deleteAuth(String authToken) throws DataAccessException {
         try {
-            authTokens.remove(authToken);
+            authTokens.removeIf(a -> a.authToken().equals(authToken));
         } catch (Exception e) {
             throw new DataAccessException("Error: Failed to delete auth token");
         }

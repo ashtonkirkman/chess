@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import dataAccess.DataAccessException;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserDAOTest {
+public class UserDAOTests {
 
     private UserDAO userDAO;
     private UserData user;
@@ -39,7 +39,7 @@ public class UserDAOTest {
     public void testClear() throws DataAccessException {
         userDAO.createUser(user);
         userDAO.clear();
-        assertThrows(DataAccessException.class, () -> userDAO.getUser(user.username()));
+        assertNull(userDAO.getUser(user.username()));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class UserDAOTest {
 
     @Test
     public void testGetUserNotFound() throws DataAccessException{
-        assertThrows(DataAccessException.class, () -> userDAO.getUser("usernamewhichdoesnotexist"));
+        assertNull(userDAO.getUser("usernameWhichDoesNotExist"));
     }
 }
 
