@@ -30,10 +30,8 @@ public class MemoryAuthDAO implements AuthDAO{
         throw new DataAccessException("Error: Auth token not found");
     }
     public void deleteAuth(String authToken) throws DataAccessException {
-        try {
-            authTokens.removeIf(a -> a.authToken().equals(authToken));
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to delete auth token");
+        if (!authTokens.removeIf(a -> a.authToken().equals(authToken))) {
+            throw new DataAccessException("Error: Auth token not found");
         }
     }
 

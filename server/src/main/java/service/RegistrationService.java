@@ -8,19 +8,15 @@ import model.UserData;
 
 import dataAccess.AuthDAO;
 import dataAccess.MemoryAuthDAO;
-import model.AuthData;
-
-import java.util.List;
-import java.util.Map;
 
 public class RegistrationService {
 
     private UserDAO userDAO;
     private AuthDAO authDAO;
 
-    public RegistrationService() {
-        this.userDAO = new MemoryUserDAO();
-        this.authDAO = new MemoryAuthDAO();
+    public RegistrationService(UserDAO userDAO, AuthDAO authDAO) {
+        this.userDAO = userDAO;
+        this.authDAO = authDAO;
     }
 
     public String register(UserData user) throws DataAccessException {
