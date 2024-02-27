@@ -1,12 +1,10 @@
 package ServiceTests;
 
 import dataAccess.*;
-import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import service.LoginService;
 import service.RegistrationService;
 import service.JoinService;
 import chess.ChessGame;
@@ -19,7 +17,6 @@ public class JoinServiceTests {
 
     private JoinService joinService;
     private RegistrationService registrationService;
-    private UserData user;
     private String authToken;
 
     @BeforeEach
@@ -31,7 +28,7 @@ public class JoinServiceTests {
 
         joinService = new JoinService(userDAO, authDAO, gameDAO);
         registrationService = new RegistrationService(userDAO, authDAO);
-        user = new UserData("akirkman", "Ashsmash47!", "kirkmash13@gmail.com");
+        UserData user = new UserData("akirkman", "Ashsmash47!", "kirkmash13@gmail.com");
 
         authToken = registrationService.register(user);
     }

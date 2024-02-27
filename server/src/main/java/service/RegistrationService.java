@@ -4,6 +4,7 @@ import dataAccess.DataAccessException;
 
 import dataAccess.UserDAO;
 import dataAccess.MemoryUserDAO;
+import model.AuthData;
 import model.UserData;
 
 import dataAccess.AuthDAO;
@@ -26,5 +27,12 @@ public class RegistrationService {
         userDAO.createUser(user);
         String authToken = authDAO.createAuth(user.username());
         return authToken;
+    }
+
+    public UserData getUser(String authToken) throws DataAccessException {
+        AuthData authData = authDAO.getAuth(authToken);
+        String username = authData.username();
+        UserData user = userDAO.getUser(username);
+        return user;
     }
 }
