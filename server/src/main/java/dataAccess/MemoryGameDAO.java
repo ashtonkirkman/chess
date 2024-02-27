@@ -1,5 +1,6 @@
 package dataAccess;
 
+import chess.ChessGame;
 import model.GameData;
 
 import java.util.List;
@@ -14,11 +15,16 @@ public class MemoryGameDAO implements GameDAO{
         this.games = new HashMap<>();
     }
 
-    public void createGame(GameData game) throws DataAccessException {
-        if(games.containsKey(game.gameID())) {
-            throw new DataAccessException("Error: Game already exists");
+    public int createGame(String gameName) throws DataAccessException {
+        for (GameData g : games.values()) {
+            if (g.gameName().equals(gameName)) {
+                throw new DataAccessException("Error: Game name already exists");
+            }
         }
-        games.put(game.gameID(), game);
+        int gameID = games.size() + 1;
+        GameData game = new GameData(gameID, null, null, gameName, new ChessGame());
+        games.put(gameID, game);
+        return gameID;
     }
     public GameData getGame(int gameID) throws DataAccessException {
         if (!games.containsKey(gameID)) {
@@ -27,12 +33,14 @@ public class MemoryGameDAO implements GameDAO{
         return games.get(gameID);
     }
 
-    public List<GameData> listGames() throws DataAccessException {
-        try {
-            return new ArrayList<>(games.values());
-        } catch (Exception e) {
-            throw new DataAccessException("Error: Failed to list games");
+    public List<GameData> listGames(String username) throws DataAccessException {
+        List<GameData> userGames = new ArrayList<>();
+        for (GameData g : games.values()) {
+            if ((g.whiteUsername() != null && g.whiteUsername().equals(username)) || (g.blackUsername() != null && g.blackUsername().equals(username))) {
+                userGames.add(g);
+            }
         }
+        return userGames;
     }
 
     public void updateGame(GameData game) throws DataAccessException {
