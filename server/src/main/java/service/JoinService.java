@@ -36,11 +36,11 @@ public class JoinService {
         return gameDAO.createGame(gameName);
     }
 
-    public void joinGame(String authToken, int gameID, ChessGame.TeamColor clientColor) throws DataAccessException {
+    public void joinGame(String authToken, int gameID, String playerColor) throws DataAccessException {
         AuthData authData = authDAO.getAuth(authToken);
         String username = authData.username();
         GameData game = gameDAO.getGame(gameID);
-        if (clientColor == ChessGame.TeamColor.WHITE) {
+        if (playerColor.toLowerCase().equals("white")) {
             if(game.whiteUsername() != null) {
                 throw new DataAccessException("Error: Game already has a white player");
             }

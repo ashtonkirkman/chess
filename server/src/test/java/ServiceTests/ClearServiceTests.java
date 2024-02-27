@@ -37,7 +37,7 @@ public class ClearServiceTests {
     @Test
     public void testClear() throws DataAccessException {
         clearService.clear();
-        assertThrows(DataAccessException.class, () -> joinService.joinGame(authToken, gameID, ChessGame.TeamColor.WHITE));
+        assertThrows(DataAccessException.class, () -> joinService.joinGame(authToken, gameID, "WHITE"));
         assertThrows(DataAccessException.class, () -> registrationService.getUser(authToken));
     }
 }

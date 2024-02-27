@@ -41,7 +41,8 @@ public class JoinServiceTests {
     @Test
     public void testJoinGame() throws DataAccessException {
         int gameID = joinService.createGame(authToken, "TestGame");
-        joinService.joinGame(authToken, gameID, ChessGame.TeamColor.WHITE);
+        String teamColor = "WHITE";
+        joinService.joinGame(authToken, gameID, teamColor);
     }
 
    @Test
@@ -49,9 +50,9 @@ public class JoinServiceTests {
        joinService.createGame(authToken, "game1");
        joinService.createGame(authToken, "game2");
        joinService.createGame(authToken, "game3");
-       joinService.joinGame(authToken, 1, ChessGame.TeamColor.WHITE);
-       joinService.joinGame(authToken, 2, ChessGame.TeamColor.BLACK);
-       joinService.joinGame(authToken, 3, ChessGame.TeamColor.WHITE);
+       joinService.joinGame(authToken, 1, "WHITE");
+       joinService.joinGame(authToken, 2, "BLACK");
+       joinService.joinGame(authToken, 3, "WHITE");
        List<GameData> games = joinService.listGames(authToken);
        for(GameData game : games) {
            System.out.println(game.gameName());
@@ -63,8 +64,8 @@ public class JoinServiceTests {
         String authToken2 = registrationService.register(new UserData("user2", "password", "email2"));
         String authToken3 = registrationService.register(new UserData("user3", "password", "email3"));
         int gameID = joinService.createGame(authToken, "game1");
-        joinService.joinGame(authToken, gameID, ChessGame.TeamColor.WHITE);
-        joinService.joinGame(authToken2, gameID, ChessGame.TeamColor.BLACK);
-        assertThrows(DataAccessException.class, () -> joinService.joinGame(authToken3, gameID, ChessGame.TeamColor.WHITE));
+        joinService.joinGame(authToken, gameID, "WHITE");
+        joinService.joinGame(authToken2, gameID, "BLACK");
+        assertThrows(DataAccessException.class, () -> joinService.joinGame(authToken3, gameID, "WHITE"));
    }
 }
