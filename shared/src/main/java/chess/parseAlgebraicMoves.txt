@@ -322,3 +322,15 @@
             }
         }
     }
+
+    public TeamColor getTeamTurn() {
+            return this.teamTurn;
+        }
+
+    private void attemptToMakeMove(ChessMove move) {
+        try {
+            this.makeMove(move);
+        } catch (InvalidMoveException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }

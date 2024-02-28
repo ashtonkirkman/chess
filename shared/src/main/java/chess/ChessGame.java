@@ -64,25 +64,6 @@ public class ChessGame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        String gameMoves = stringBuilder.toString();
-
-        ChessGame myGame = new ChessGame();
-    }
-
-    /**
-     * @return Which team's turn it is
-     */
-    public TeamColor getTeamTurn() {
-        return this.teamTurn;
-    }
-
-    private void attemptToMakeMove(ChessMove move) {
-        try {
-            this.makeMove(move);
-        } catch (InvalidMoveException ex) {
-            System.out.println(ex.getMessage());
-        }
     }
 
     /**

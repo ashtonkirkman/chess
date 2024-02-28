@@ -29,14 +29,6 @@ public class ChessBoard {
         }
     }
 
-    public void clearBoard() {
-        for(int i = 0; i < boardSize; i++) {
-            for(int j = 0; j < boardSize; j++) {
-                boardPieces[i][j] = null;
-            }
-        }
-    }
-
     /**
      * Adds a chess piece to the chessboard
      *
