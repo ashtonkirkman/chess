@@ -11,11 +11,6 @@ public class MemoryAuthDAO implements AuthDAO{
         this.authTokens = new ArrayList<AuthData>();
     }
     public String createAuth(String username) throws DataAccessException {
-        for (AuthData a : authTokens) {
-            if (a.username().equals(username)) {
-                throw new DataAccessException("Error: Username already logged in");
-            }
-        }
         String authToken = UUID.randomUUID().toString();
         AuthData auth = new AuthData(authToken, username);
         authTokens.add(auth);

@@ -4,6 +4,8 @@ import dataAccess.DataAccessException;
 
 import dataAccess.UserDAO;
 import dataAccess.MemoryUserDAO;
+import exception.EmptyCredentialsException;
+import exception.UsernameExistsException;
 import model.AuthData;
 import model.UserData;
 
@@ -20,19 +22,15 @@ public class RegistrationService {
         this.authDAO = authDAO;
     }
 
-    public String register(UserData user) throws DataAccessException {
-        if(userDAO.getUser(user.username()) != null) {
-            throw new DataAccessException("Error: Username already exists");
+    public String register(UserData user) throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
+        if(user.username() == null || user.password() == null || user.username().isEmpty() || user.password().isEmpty()) {
+            throw new EmptyCredentialsException("Error: Username and password cannot be empty");
+        }
+        if(userDAO.getUser(user.username(), user.password()) != null) {
+            throw new UsernameExistsException("Error: Username already exists");
         }
         userDAO.createUser(user);
         String authToken = authDAO.createAuth(user.username());
         return authToken;
-    }
-
-    public UserData getUser(String authToken) throws DataAccessException {
-        AuthData authData = authDAO.getAuth(authToken);
-        String username = authData.username();
-        UserData user = userDAO.getUser(username);
-        return user;
     }
 }

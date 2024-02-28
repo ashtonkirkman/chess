@@ -1,6 +1,8 @@
 package ServiceTests;
 
 import dataAccess.*;
+import exception.EmptyCredentialsException;
+import exception.UsernameExistsException;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,7 @@ public class JoinServiceTests {
     private String authToken;
 
     @BeforeEach
-    public void setup() throws DataAccessException {
+    public void setup() throws DataAccessException, EmptyCredentialsException, UsernameExistsException{
 
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
@@ -60,7 +62,7 @@ public class JoinServiceTests {
    }
 
    @Test
-   public void testJoinGameAlreadyHasWhitePlayer() throws DataAccessException {
+   public void testJoinGameAlreadyHasWhitePlayer() throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
         String authToken2 = registrationService.register(new UserData("user2", "password", "email2"));
         String authToken3 = registrationService.register(new UserData("user3", "password", "email3"));
         int gameID = joinService.createGame(authToken, "game1");

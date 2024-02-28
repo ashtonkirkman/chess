@@ -9,13 +9,18 @@ import model.*;
 import dataAccess.*;
 import service.JoinService;
 import service.LoginService;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class CreateGameHandler implements HttpHandler {
+public class CreateGameHandler implements Route {
 
     private Gson gson = new Gson();
     private JoinService joinService;
@@ -57,5 +62,33 @@ public class CreateGameHandler implements HttpHandler {
             exchange.getResponseBody().close();
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public Object handle(Request request, Response response) throws Exception {
+        try {
+            if (request.requestMethod().equalsIgnoreCase("POST")) {
+                String authToken = request.headers("Authorization");
+                if (authToken != null) {
+                    CreateGameRequest createGameRequest = gson.fromJson(request.body(), CreateGameRequest.class);
+                    int gameID = joinService.createGame(authToken, createGameRequest.gameName());
+                    CreateGameResponse createGameResponse = new CreateGameResponse(gameID);
+                    response.status(HttpURLConnection.HTTP_OK);
+                    return gson.toJson(createGameResponse);
+                }
+            }
+            response.status(HttpURLConnection.HTTP_BAD_REQUEST);
+            return errorResponse("Invalid request or missing Authorization header");
+        } catch (DataAccessException e) {
+            response.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            return errorResponse(e.getMessage());
+        }
+    }
+
+    private String errorResponse(String message) {
+        Map<String, String> jsonResponse = new HashMap<>();
+        jsonResponse.put("message", message);
+        return gson.toJson(jsonResponse);
     }
 }

@@ -1,9 +1,13 @@
 package server;
 
-import com.sun.net.httpserver.*;
+import com.google.gson.Gson;
 import dataAccess.*;
+import exception.ResponseException;
 import spark.*;
 import service.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Server {
 
@@ -14,6 +18,7 @@ public class Server {
     private RegistrationService registrationService = new RegistrationService(userDAO, authDAO);
     private JoinService joinGameService = new JoinService(userDAO, authDAO, gameDAO);
     private ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+    private Gson gson = new Gson();
 
     public int run(int desiredPort) {
 
@@ -26,6 +31,9 @@ public class Server {
         Spark.post("/session", new LoginHandler(loginService));
         Spark.delete("/db", new ClearHandler(clearService));
         Spark.delete("/session", new LogoutHandler(loginService));
+        Spark.post("/game", new CreateGameHandler(joinGameService));
+        Spark.put("/game", new JoinGameHandler(joinGameService));
+        Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -34,6 +42,16 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private void exceptionHandler(ResponseException ex, Request req, Response res) {
+        res.status(ex.StatusCode());
+        res.type("application/json");
+
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("message", ex.getMessage());
+        String json = gson.toJson(errorResponse);
+        res.body(json);
     }
 
     public static void main(String[] args) {

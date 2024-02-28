@@ -27,9 +27,16 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username, String password) throws DataAccessException {
         if (!users.containsKey(username)) {
             return null;
+        }
+        for(UserData u : users.values()) {
+            if (u.username().equals(username)) {
+                if (!u.password().equals(password)) {
+                    throw new DataAccessException("Error: Incorrect password");
+                }
+            }
         }
         return users.get(username);
     }

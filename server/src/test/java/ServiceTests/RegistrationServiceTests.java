@@ -1,6 +1,8 @@
 package ServiceTests;
 
 import dataAccess.*;
+import exception.EmptyCredentialsException;
+import exception.UsernameExistsException;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,13 +25,13 @@ public class RegistrationServiceTests {
     }
 
     @Test
-    public void testRegister() throws DataAccessException {
+    public void testRegister() throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
         String authToken = registrationService.register(user);
         assertNotNull(authToken);
     }
 
     @Test
-    public void testRegisterUserAlreadyExists() throws DataAccessException {
+    public void testRegisterUserAlreadyExists() throws DataAccessException, EmptyCredentialsException, UsernameExistsException{
         registrationService.register(user);
         assertThrows(DataAccessException.class, () -> registrationService.register(user));
     }

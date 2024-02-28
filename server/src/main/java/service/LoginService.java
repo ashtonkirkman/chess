@@ -19,13 +19,12 @@ public class LoginService {
         this.authDAO = authDAO;
     }
 
-    public String login(UserData user) throws DataAccessException {
-        String username = user.username();
-        UserData userFromDB = userDAO.getUser(username);
+    public String login(String username, String password) throws DataAccessException {
+        UserData userFromDB = userDAO.getUser(username, password);
         if(userFromDB == null) {
             throw new DataAccessException("Error: Username does not exist, please register");
         }
-        String authToken = authDAO.createAuth(user.username());
+        String authToken = authDAO.createAuth(username);
         return authToken;
     }
 

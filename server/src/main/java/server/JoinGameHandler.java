@@ -1,24 +1,18 @@
 package server;
 
 import com.google.gson.Gson;
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import dataAccess.DataAccessException;
-import model.AuthData;
-import dataAccess.*;
-import model.GameData;
 import model.JoinGameRequest;
-import model.UserData;
 import service.JoinService;
-import service.LoginService;
-
-import java.io.*;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 
-public class JoinGameHandler implements HttpHandler {
+public class JoinGameHandler implements Route {
 
     private Gson gson = new Gson();
     private JoinService joinService;
@@ -27,33 +21,29 @@ public class JoinGameHandler implements HttpHandler {
         this.joinService = joinService;
     }
 
-    public void handle(HttpExchange exchange) throws IOException {
-        boolean success = false;
+    @Override
+    public Object handle(Request request, Response response) throws Exception {
         try {
-            if (exchange.getRequestMethod().toLowerCase().equals("put")) {
-
-                Headers reqHeaders = exchange.getRequestHeaders();
-                if (reqHeaders.containsKey("Authorization")) {
-                    String authToken = reqHeaders.getFirst("Authorization");
-                    InputStream reqBody = exchange.getRequestBody();
-                    String reqData = Utils.readString(reqBody);
-                    JoinGameRequest request = gson.fromJson(reqData, JoinGameRequest.class);
-                    joinService.joinGame(authToken, request.gameID(), request.playerColor());
-
-                    exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, 0);
-
-                    success = true;
+            if (request.requestMethod().equalsIgnoreCase("PUT")) {
+                String authToken = request.headers("Authorization");
+                if (authToken != null) {
+                    JoinGameRequest joinGameRequest = gson.fromJson(request.body(), JoinGameRequest.class);
+                    joinService.joinGame(authToken, joinGameRequest.gameID(), joinGameRequest.playerColor());
+                    response.status(HttpURLConnection.HTTP_OK);
+                    return "{}";
                 }
             }
-            if (!success) {
-                exchange.sendResponseHeaders(HttpURLConnection.HTTP_BAD_REQUEST, 0);
-                exchange.getResponseBody().close();
-            }
+            response.status(HttpURLConnection.HTTP_BAD_REQUEST);
+            return errorResponse("Invalid request or missing Authorization header");
+        } catch (DataAccessException e) {
+            response.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
+            return errorResponse(e.getMessage());
         }
-        catch (IOException | DataAccessException e) {
-            exchange.sendResponseHeaders(HttpURLConnection.HTTP_SERVER_ERROR, 0);
-            exchange.getResponseBody().close();
-            e.printStackTrace();
-        }
+    }
+
+    private String errorResponse(String message) {
+        Map<String, String> jsonResponse = new HashMap<>();
+        jsonResponse.put("message", message);
+        return gson.toJson(jsonResponse);
     }
 }
