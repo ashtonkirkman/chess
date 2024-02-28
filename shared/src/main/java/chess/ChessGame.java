@@ -68,7 +68,6 @@ public class ChessGame {
         String gameMoves = stringBuilder.toString();
 
         ChessGame myGame = new ChessGame();
-        myGame.parseAlgebraicMoves(gameMoves);
     }
 
     /**
@@ -439,301 +438,301 @@ public class ChessGame {
         }
     }
 
-    private void parseAlgebraicMoves(String moveString) {
-        String[] moveTokens = moveString.split("\\s*\\d+\\.\\s*");
-        // Remove the first index from moveTokens
-        ChessPosition startPosition = new ChessPosition(1, 1);
-        ChessPosition endPosition = null;
-
-        ChessPosition[][] currentPosition = new ChessPosition[8][8];
-        ChessPiece[][] currentPiece = new ChessPiece[8][8];
-
-        System.out.println(this);
-
-        for(String token : moveTokens) {
-            if (token.isEmpty()) {
-                continue;
-            }
-            String[] moveParts = token.trim().split("\\s+");
-            for(String part : moveParts) {
-
-                if(part.matches("[KQRBN]x?[a-h][1-8]\\+?")) {
-
-                    int rank = part.matches("[KQRBN][a-h][1-8]\\+?") ? Character.getNumericValue(part.charAt(2)) : Character.getNumericValue(part.charAt(3));
-                    int file = part.matches("[KQRBN][a-h][1-8]\\+?") ? part.charAt(1) - 'a' + 1 : part.charAt(2) - 'a' + 1;
-
-                    char piece = part.charAt(0);
-
-                    endPosition = new ChessPosition(rank, file);
-
-                    switch(piece) {
-                        case 'K':
-                            checkToAddMove(ChessPiece.PieceType.KING, endPosition);
-                            break;
-                        case 'Q':
-                            checkToAddMove(ChessPiece.PieceType.QUEEN, endPosition);
-                            break;
-                        case 'R':
-                            checkToAddMove(ChessPiece.PieceType.ROOK, endPosition);
-                            break;
-                        case 'B':
-                            checkToAddMove(ChessPiece.PieceType.BISHOP, endPosition);
-                            break;
-                        case 'N':
-                            checkToAddMove(ChessPiece.PieceType.KNIGHT, endPosition);
-                            break;
-                    }
-                }
-                else if(part.matches("[KQRBN][a-h][a-h][1-8]\\+?")) {
-
-                    int rank = Character.getNumericValue(part.charAt(3));
-                    int file = part.charAt(2) - 'a' + 1;
-                    int startFile = part.charAt(1) - 'a' + 1;
-
-                    char piece = part.charAt(0);
-
-                    endPosition = new ChessPosition(rank, file);
-
-                    switch(piece) {
-                        case 'K':
-                            for(int i = 0; i < 8; i++) {
-                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                                if(currentPiece[i][startFile-1] == null) {
-                                    continue;
-                                }
-                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.KING && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[i][startFile-1];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'Q':
-                            for(int i = 0; i < 8; i++) {
-                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                                if(currentPiece[i][startFile-1] == null) {
-                                    continue;
-                                }
-                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.QUEEN && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[i][startFile-1];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'R':
-                            for(int i = 0; i < 8; i++) {
-                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                                if(currentPiece[i][startFile-1] == null) {
-                                    continue;
-                                }
-                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.ROOK && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[i][startFile-1];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'B':
-                            for(int i = 0; i < 8; i++) {
-                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                                if(currentPiece[i][startFile-1] == null) {
-                                    continue;
-                                }
-                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.BISHOP && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[i][startFile-1];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'N':
-                            for(int i = 0; i < 8; i++) {
-                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                                if(currentPiece[i][startFile-1] == null) {
-                                    continue;
-                                }
-                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.KNIGHT && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[i][startFile-1];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                }
-                else if(part.matches("[KQRBN][1-8][a-h][1-8]\\+?")) {
-                    int rank = Character.getNumericValue(part.charAt(3));
-                    int file = part.charAt(2) - 'a' + 1;
-                    int startRank = Character.getNumericValue(part.charAt(1));
-
-                    char piece = part.charAt(0);
-
-                    endPosition = new ChessPosition(rank, file);
-
-                    switch(piece) {
-                        case 'K':
-                            for (int i = 0; i < 8; i++) {
-                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
-                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
-                                if (currentPiece[startRank - 1][i] == null) {
-                                    continue;
-                                }
-                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.KING && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[startRank-1][i];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'Q':
-                            for (int i = 0; i < 8; i++) {
-                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
-                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
-                                if (currentPiece[startRank - 1][i] == null) {
-                                    continue;
-                                }
-                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.QUEEN && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[startRank-1][i];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'R':
-                            for (int i = 0; i < 8; i++) {
-                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
-                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
-                                if (currentPiece[startRank - 1][i] == null) {
-                                    continue;
-                                }
-                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.ROOK && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[startRank-1][i];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'B':
-                            for (int i = 0; i < 8; i++) {
-                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
-                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
-                                if (currentPiece[startRank - 1][i] == null) {
-                                    continue;
-                                }
-                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.BISHOP && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[startRank-1][i];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                        case 'N':
-                            for (int i = 0; i < 8; i++) {
-                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
-                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
-                                if (currentPiece[startRank - 1][i] == null) {
-                                    continue;
-                                }
-                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.KNIGHT && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
-                                    startPosition = currentPosition[startRank-1][i];
-                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                        break;
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                }
-                else if(part.matches("[a-h][1-8]\\+?")) {
-                    int rank = Character.getNumericValue(part.charAt(1));
-                    int file = part.charAt(0) - 'a' + 1;
-                    endPosition = new ChessPosition(rank, file);
-
-                    for(int i = 1; i < 7; i++) {
-                        currentPosition[i][file-1] = new ChessPosition(i+1, file);
-                        currentPiece[i][file-1] = board.getPiece(currentPosition[i][file-1]);
-                        if(currentPiece[i][file-1] == null) {
-                            continue;
-                        }
-                        if(currentPiece[i][file-1].getPieceType() == ChessPiece.PieceType.PAWN && currentPiece[i][file-1].getTeamColor() == teamTurn) {
-                            startPosition = currentPosition[i][file-1];
-                            if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                break;
-                            }
-                        }
-                    }
-                }
-                else if(part.matches("[a-h]x[a-h][1-8]\\+?")) {
-                    int rank = Character.getNumericValue(part.charAt(3));
-                    int file = part.charAt(2) - 'a' + 1;
-                    endPosition = new ChessPosition(rank, file);
-
-                    int startFile = part.charAt(0) - 'a' + 1;
-
-                    for(int i = 1; i < 7; i++) {
-                        currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
-                        currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
-                        if(currentPiece[i][startFile-1] == null) {
-                            continue;
-                        }
-                        if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.PAWN && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
-                            startPosition = currentPosition[i][startFile-1];
-                            if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
-                                attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
-                                break;
-                            }
-                        }
-                    }
-                }
-                else if(part.matches("O-O")) {
-                    if(teamTurn == TeamColor.WHITE) {
-                        attemptToMakeMove(new ChessMove(e[1], g[1], null));
-                    }
-                    else {
-                        attemptToMakeMove(new ChessMove(e[8], g[8], null));
-                    }
-                }
-                else if(part.matches("O-O-O")) {
-                    if(teamTurn == TeamColor.WHITE) {
-                        attemptToMakeMove(new ChessMove(e[1], c[1], null));
-                    }
-                    else {
-                        attemptToMakeMove(new ChessMove(e[8], c[8], null));
-                    }
-                }
-                else {
-                    System.out.println("Invalid move: " + part);
-                }
-                System.out.println(this);
-            }
-        }
-    }
+//    private void parseAlgebraicMoves(String moveString) {
+//        String[] moveTokens = moveString.split("\\s*\\d+\\.\\s*");
+//        // Remove the first index from moveTokens
+//        ChessPosition startPosition = new ChessPosition(1, 1);
+//        ChessPosition endPosition = null;
+//
+//        ChessPosition[][] currentPosition = new ChessPosition[8][8];
+//        ChessPiece[][] currentPiece = new ChessPiece[8][8];
+//
+//        System.out.println(this);
+//
+//        for(String token : moveTokens) {
+//            if (token.isEmpty()) {
+//                continue;
+//            }
+//            String[] moveParts = token.trim().split("\\s+");
+//            for(String part : moveParts) {
+//
+//                if(part.matches("[KQRBN]x?[a-h][1-8]\\+?")) {
+//
+//                    int rank = part.matches("[KQRBN][a-h][1-8]\\+?") ? Character.getNumericValue(part.charAt(2)) : Character.getNumericValue(part.charAt(3));
+//                    int file = part.matches("[KQRBN][a-h][1-8]\\+?") ? part.charAt(1) - 'a' + 1 : part.charAt(2) - 'a' + 1;
+//
+//                    char piece = part.charAt(0);
+//
+//                    endPosition = new ChessPosition(rank, file);
+//
+//                    switch(piece) {
+//                        case 'K':
+//                            checkToAddMove(ChessPiece.PieceType.KING, endPosition);
+//                            break;
+//                        case 'Q':
+//                            checkToAddMove(ChessPiece.PieceType.QUEEN, endPosition);
+//                            break;
+//                        case 'R':
+//                            checkToAddMove(ChessPiece.PieceType.ROOK, endPosition);
+//                            break;
+//                        case 'B':
+//                            checkToAddMove(ChessPiece.PieceType.BISHOP, endPosition);
+//                            break;
+//                        case 'N':
+//                            checkToAddMove(ChessPiece.PieceType.KNIGHT, endPosition);
+//                            break;
+//                    }
+//                }
+//                else if(part.matches("[KQRBN][a-h][a-h][1-8]\\+?")) {
+//
+//                    int rank = Character.getNumericValue(part.charAt(3));
+//                    int file = part.charAt(2) - 'a' + 1;
+//                    int startFile = part.charAt(1) - 'a' + 1;
+//
+//                    char piece = part.charAt(0);
+//
+//                    endPosition = new ChessPosition(rank, file);
+//
+//                    switch(piece) {
+//                        case 'K':
+//                            for(int i = 0; i < 8; i++) {
+//                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                                if(currentPiece[i][startFile-1] == null) {
+//                                    continue;
+//                                }
+//                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.KING && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[i][startFile-1];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'Q':
+//                            for(int i = 0; i < 8; i++) {
+//                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                                if(currentPiece[i][startFile-1] == null) {
+//                                    continue;
+//                                }
+//                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.QUEEN && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[i][startFile-1];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'R':
+//                            for(int i = 0; i < 8; i++) {
+//                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                                if(currentPiece[i][startFile-1] == null) {
+//                                    continue;
+//                                }
+//                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.ROOK && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[i][startFile-1];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'B':
+//                            for(int i = 0; i < 8; i++) {
+//                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                                if(currentPiece[i][startFile-1] == null) {
+//                                    continue;
+//                                }
+//                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.BISHOP && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[i][startFile-1];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'N':
+//                            for(int i = 0; i < 8; i++) {
+//                                currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                                currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                                if(currentPiece[i][startFile-1] == null) {
+//                                    continue;
+//                                }
+//                                if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.KNIGHT && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[i][startFile-1];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                    }
+//                }
+//                else if(part.matches("[KQRBN][1-8][a-h][1-8]\\+?")) {
+//                    int rank = Character.getNumericValue(part.charAt(3));
+//                    int file = part.charAt(2) - 'a' + 1;
+//                    int startRank = Character.getNumericValue(part.charAt(1));
+//
+//                    char piece = part.charAt(0);
+//
+//                    endPosition = new ChessPosition(rank, file);
+//
+//                    switch(piece) {
+//                        case 'K':
+//                            for (int i = 0; i < 8; i++) {
+//                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
+//                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
+//                                if (currentPiece[startRank - 1][i] == null) {
+//                                    continue;
+//                                }
+//                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.KING && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[startRank-1][i];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'Q':
+//                            for (int i = 0; i < 8; i++) {
+//                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
+//                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
+//                                if (currentPiece[startRank - 1][i] == null) {
+//                                    continue;
+//                                }
+//                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.QUEEN && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[startRank-1][i];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'R':
+//                            for (int i = 0; i < 8; i++) {
+//                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
+//                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
+//                                if (currentPiece[startRank - 1][i] == null) {
+//                                    continue;
+//                                }
+//                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.ROOK && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[startRank-1][i];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'B':
+//                            for (int i = 0; i < 8; i++) {
+//                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
+//                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
+//                                if (currentPiece[startRank - 1][i] == null) {
+//                                    continue;
+//                                }
+//                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.BISHOP && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[startRank-1][i];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                        case 'N':
+//                            for (int i = 0; i < 8; i++) {
+//                                currentPosition[startRank - 1][i] = new ChessPosition(startRank, i + 1);
+//                                currentPiece[startRank - 1][i] = board.getPiece(currentPosition[startRank - 1][i]);
+//                                if (currentPiece[startRank - 1][i] == null) {
+//                                    continue;
+//                                }
+//                                if (currentPiece[startRank-1][i].getPieceType() == ChessPiece.PieceType.KNIGHT && currentPiece[startRank-1][i].getTeamColor() == teamTurn) {
+//                                    startPosition = currentPosition[startRank-1][i];
+//                                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            break;
+//                    }
+//                }
+//                else if(part.matches("[a-h][1-8]\\+?")) {
+//                    int rank = Character.getNumericValue(part.charAt(1));
+//                    int file = part.charAt(0) - 'a' + 1;
+//                    endPosition = new ChessPosition(rank, file);
+//
+//                    for(int i = 1; i < 7; i++) {
+//                        currentPosition[i][file-1] = new ChessPosition(i+1, file);
+//                        currentPiece[i][file-1] = board.getPiece(currentPosition[i][file-1]);
+//                        if(currentPiece[i][file-1] == null) {
+//                            continue;
+//                        }
+//                        if(currentPiece[i][file-1].getPieceType() == ChessPiece.PieceType.PAWN && currentPiece[i][file-1].getTeamColor() == teamTurn) {
+//                            startPosition = currentPosition[i][file-1];
+//                            if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//                else if(part.matches("[a-h]x[a-h][1-8]\\+?")) {
+//                    int rank = Character.getNumericValue(part.charAt(3));
+//                    int file = part.charAt(2) - 'a' + 1;
+//                    endPosition = new ChessPosition(rank, file);
+//
+//                    int startFile = part.charAt(0) - 'a' + 1;
+//
+//                    for(int i = 1; i < 7; i++) {
+//                        currentPosition[i][startFile-1] = new ChessPosition(i+1, startFile);
+//                        currentPiece[i][startFile-1] = board.getPiece(currentPosition[i][startFile-1]);
+//                        if(currentPiece[i][startFile-1] == null) {
+//                            continue;
+//                        }
+//                        if(currentPiece[i][startFile-1].getPieceType() == ChessPiece.PieceType.PAWN && currentPiece[i][startFile-1].getTeamColor() == teamTurn) {
+//                            startPosition = currentPosition[i][startFile-1];
+//                            if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+//                                attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//                else if(part.matches("O-O")) {
+//                    if(teamTurn == TeamColor.WHITE) {
+//                        attemptToMakeMove(new ChessMove(e[1], g[1], null));
+//                    }
+//                    else {
+//                        attemptToMakeMove(new ChessMove(e[8], g[8], null));
+//                    }
+//                }
+//                else if(part.matches("O-O-O")) {
+//                    if(teamTurn == TeamColor.WHITE) {
+//                        attemptToMakeMove(new ChessMove(e[1], c[1], null));
+//                    }
+//                    else {
+//                        attemptToMakeMove(new ChessMove(e[8], c[8], null));
+//                    }
+//                }
+//                else {
+//                    System.out.println("Invalid move: " + part);
+//                }
+//                System.out.println(this);
+//            }
+//        }
+//    }
 
     @Override
     public boolean equals(Object o) {
