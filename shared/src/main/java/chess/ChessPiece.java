@@ -206,43 +206,6 @@ public class ChessPiece {
                     }
                 }
                 break;
-
-            case ROOK:
-                for(int i = -1; i <= 1; i++) {
-                    for(int j = -1; j <= 1; j++) {
-                        for(int k = 1; k <= 7; k++) {
-                            int newRank = currentRank + k*i;
-                            int newFile = currentFile + k*j;
-
-                            if((Math.abs(i) == 1 && Math.abs(j) == 1) || (i == 0 && j == 0) || !isInBounds(newRank, newFile)) break;
-                            destination = new ChessPosition(newRank, newFile);
-                            destinationPiece = board.getPiece(destination);
-                            if(isValidMove(destinationPiece, destination)) {
-                                addMove(validMoves, myPosition, destination);
-                                if(destinationPiece != null) break;
-                            }
-                            else break;
-                        }
-                    }
-                }
-                break;
-
-            case KNIGHT:
-                for(int i = -2; i <= 2; i++) {
-                    for(int j = -2; j <= 2; j++) {
-                        int newRank = currentRank + i;
-                        int newFile = currentFile + j;
-
-                        if(((Math.abs(i) == 1 && Math.abs(j) == 2) || (Math.abs(i) == 2 && Math.abs(j) == 1)) && isInBounds(newRank, newFile)) {
-                            destination = new ChessPosition(newRank, newFile);
-                            destinationPiece = board.getPiece(destination);
-                            if (isValidMove(destinationPiece, destination)) {
-                                addMove(validMoves, myPosition, destination);
-                            }
-                        }
-                    }
-                }
-                break;
         }
 
         return validMoves;
