@@ -33,7 +33,7 @@ public class JoinGameHandler implements Route {
             joinService.joinGame(authToken, joinGameRequest.gameID(), joinGameRequest.playerColor());
             return "{}";
         } catch (UnauthorizedException | BadRequestException | UsernameExistsException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (DataAccessException e) {
             throw new ResponseException(500, e.getMessage());
         }

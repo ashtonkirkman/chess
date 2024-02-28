@@ -33,7 +33,7 @@ public class RegisterHandler implements Route {
             String authTokenJson = gson.toJson(authData);
             return authTokenJson;
         }catch (EmptyCredentialsException | UsernameExistsException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (Exception e) {
             throw new ResponseException(500, e.getMessage());
         }

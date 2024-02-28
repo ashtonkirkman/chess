@@ -33,7 +33,7 @@ public class LogoutHandler implements Route {
             loginService.logout(authToken);
             return "{}";
         } catch (UnauthorizedException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (DataAccessException e) {
             throw new ResponseException(500, e.getMessage());
         }

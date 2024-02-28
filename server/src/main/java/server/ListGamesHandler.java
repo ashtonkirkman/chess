@@ -39,7 +39,7 @@ public class ListGamesHandler implements Route {
             String gamesJson = gson.toJson(listGameResponse);
             return gamesJson;
         } catch (UnauthorizedException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (DataAccessException e) {
             throw new ResponseException(401, e.getMessage());
         }

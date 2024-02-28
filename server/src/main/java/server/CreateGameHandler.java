@@ -40,7 +40,7 @@ public class CreateGameHandler implements Route {
             CreateGameResponse createGameResponse = new CreateGameResponse(gameID);
             return gson.toJson(createGameResponse);
         } catch (UnauthorizedException e) {
-            throw new ResponseException(e.StatusCode(), e.getMessage());
+            throw new ResponseException(e.statusCode(), e.getMessage());
         } catch (DataAccessException e) {
             throw new ResponseException(500, e.getMessage());
         }
