@@ -161,16 +161,21 @@ public class ChessGame {
             return false;
         }
         for(int i = 6; i < 8; i++) {
-            if(board.getPiece(new ChessPosition(kingPosition.getRow(), i)) != null) {
-                return false;
-            }
-            testMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null));
-            if(isInCheck(teamTurn)) {
-                return false;
-            }
-            undoMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null), null);
+            if (checkRanks(teamTurn, kingPosition, i)) return false;
         }
         return true;
+    }
+
+    private boolean checkRanks(TeamColor teamTurn, ChessPosition kingPosition, int i) {
+        if(board.getPiece(new ChessPosition(kingPosition.getRow(), i)) != null) {
+            return true;
+        }
+        testMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null));
+        if(isInCheck(teamTurn)) {
+            return true;
+        }
+        undoMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null), null);
+        return false;
     }
 
     private boolean canCastleQueenside(TeamColor teamTurn) {
@@ -192,14 +197,7 @@ public class ChessGame {
             return false;
         }
         for(int i = 2; i < 5; i++) {
-            if(board.getPiece(new ChessPosition(kingPosition.getRow(), i)) != null) {
-                return false;
-            }
-            testMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null));
-            if(isInCheck(teamTurn)) {
-                return false;
-            }
-            undoMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null), null);
+            if (checkRanks(teamTurn, kingPosition, i)) return false;
         }
         return true;
     }
