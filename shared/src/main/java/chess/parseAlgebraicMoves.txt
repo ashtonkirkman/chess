@@ -293,3 +293,32 @@
 //            }
 //        }
 //    }
+
+    private void checkToAddMove(ChessPiece.PieceType pieceType, ChessPosition endPosition) {
+
+        ChessPosition[][] currentPosition = new ChessPosition[8][8];
+        ChessPiece[][] currentPiece = new ChessPiece[8][8];
+        ChessPosition startPosition = null;
+        boolean moveAdded = false;
+
+        for(int i = 0; i < 8; i++) {
+            if(moveAdded) {
+                break;
+            }
+            for(int j = 0; j < 8; j++){
+                currentPosition[i][j] = new ChessPosition(i+1, j+1);
+                currentPiece[i][j] = board.getPiece(currentPosition[i][j]);
+                if(currentPiece[i][j] == null) {
+                    continue;
+                }
+                if(currentPiece[i][j].getPieceType() == pieceType && currentPiece[i][j].getTeamColor() == teamTurn) {
+                    startPosition = currentPosition[i][j];
+                    if (validMoves(startPosition).contains(new ChessMove(startPosition, endPosition, null))) {
+                        attemptToMakeMove(new ChessMove(startPosition, endPosition, null));
+                        moveAdded = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
