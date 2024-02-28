@@ -57,124 +57,28 @@ public class ChessMove {
         return Objects.hash(startPosition, endPosition, promotionPiece);
     }
 
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        int startRow = startPosition.getRow();
-        int startColumn = startPosition.getColumn();
-        int endRow = endPosition.getRow();
-        int endColumn = endPosition.getColumn();
-
-        switch(startColumn) {
-            case 1:
-                sb.append("a");
-                break;
-            case 2:
-                sb.append("b");
-                break;
-            case 3:
-                sb.append("c");
-                break;
-            case 4:
-                sb.append("d");
-                break;
-            case 5:
-                sb.append("e");
-                break;
-            case 6:
-                sb.append("f");
-                break;
-            case 7:
-                sb.append("g");
-                break;
-            case 8:
-                sb.append("h");
-                break;
-
-        }
-        switch(startRow) {
-            case 1:
-                sb.append("1");
-                break;
-            case 2:
-                sb.append("2");
-                break;
-            case 3:
-                sb.append("3");
-                break;
-            case 4:
-                sb.append("4");
-                break;
-            case 5:
-                sb.append("5");
-                break;
-            case 6:
-                sb.append("6");
-                break;
-            case 7:
-                sb.append("7");
-                break;
-            case 8:
-                sb.append("8");
-                break;
-        }
+        appendLetter(sb, startPosition.getColumn());
+        appendDigit(sb, startPosition.getRow());
         sb.append(" to ");
-        switch(endColumn) {
-            case 1:
-                sb.append("a");
-                break;
-            case 2:
-                sb.append("b");
-                break;
-            case 3:
-                sb.append("c");
-                break;
-            case 4:
-                sb.append("d");
-                break;
-            case 5:
-                sb.append("e");
-                break;
-            case 6:
-                sb.append("f");
-                break;
-            case 7:
-                sb.append("g");
-                break;
-            case 8:
-                sb.append("h");
-                break;
-        }
-        switch(endRow) {
-            case 1:
-                sb.append("1");
-                break;
-            case 2:
-                sb.append("2");
-                break;
-            case 3:
-                sb.append("3");
-                break;
-            case 4:
-                sb.append("4");
-                break;
-            case 5:
-                sb.append("5");
-                break;
-            case 6:
-                sb.append("6");
-                break;
-            case 7:
-                sb.append("7");
-                break;
-            case 8:
-                sb.append("8");
-                break;
-        }
+        appendLetter(sb, endPosition.getColumn());
+        appendDigit(sb, endPosition.getRow());
 
-        if(promotionPiece != null) sb.append(" - ").append(promotionPiece);
+        if (promotionPiece != null) {
+            sb.append(" - ").append(promotionPiece);
+        }
 
         return sb.toString();
+    }
+
+    private void appendLetter(StringBuilder sb, int column) {
+        char letter = (char) ('a' + column - 1);
+        sb.append(letter);
+    }
+
+    private void appendDigit(StringBuilder sb, int row) {
+        sb.append(row);
     }
 }
