@@ -40,6 +40,6 @@ public class ClearServiceTests {
     @Test
     public void testClear() throws DataAccessException {
         clearService.clear();
-        assertThrows(DataAccessException.class, () -> joinService.joinGame(authToken, gameID, "WHITE"));
+        assertThrows(UnauthorizedException.class, () -> joinService.joinGame(authToken, gameID, "WHITE"));
     }
 }

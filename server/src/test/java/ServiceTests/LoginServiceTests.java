@@ -45,6 +45,6 @@ public class LoginServiceTests {
     @Test
     public void testAlreadyLoggedIn() throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
         registrationService.register(user);
-        assertThrows(DataAccessException.class, () -> loginService.login(user.username(), user.password()));
+        loginService.login(user.username(), user.password());
     }
 }

@@ -33,6 +33,6 @@ public class RegistrationServiceTests {
     @Test
     public void testRegisterUserAlreadyExists() throws DataAccessException, EmptyCredentialsException, UsernameExistsException{
         registrationService.register(user);
-        assertThrows(DataAccessException.class, () -> registrationService.register(user));
+        assertThrows(UsernameExistsException.class, () -> registrationService.register(user));
     }
 }
