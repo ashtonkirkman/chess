@@ -2,6 +2,7 @@ package ServiceTests;
 
 import dataAccess.*;
 import exception.EmptyCredentialsException;
+import exception.UnauthorizedException;
 import exception.UsernameExistsException;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +22,7 @@ public class ClearServiceTests {
     private int gameID;
 
     @BeforeEach
-    public void setup() throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
+    public void setup() throws DataAccessException, EmptyCredentialsException, UsernameExistsException, UnauthorizedException {
 
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();

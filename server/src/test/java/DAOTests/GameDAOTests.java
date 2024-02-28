@@ -4,6 +4,7 @@ import chess.ChessGame;
 import dataAccess.MemoryGameDAO;
 import dataAccess.GameDAO;
 import model.GameData;
+import model.ListGameRequest;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,8 +78,8 @@ public class GameDAOTests {
         gameDAO.createGame(gameName);
         GameData game2 = gameDAO.getGame(2);
         gameDAO.updateGame(new GameData(game2.gameID(), user.username(), null, gameName, game2.game()));
-        List<GameData> gameList = gameDAO.listGames(user.username());
-        for (GameData game : gameList) {
+        List<ListGameRequest> gameList = gameDAO.listGames(user.username());
+        for (ListGameRequest game : gameList) {
             System.out.println(game.gameName());
         }
     }

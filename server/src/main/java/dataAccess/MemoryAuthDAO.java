@@ -1,5 +1,6 @@
 package dataAccess;
 
+import exception.UnauthorizedException;
 import model.AuthData;
 
 import java.util.*;

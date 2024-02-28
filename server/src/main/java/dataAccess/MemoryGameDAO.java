@@ -2,6 +2,7 @@ package dataAccess;
 
 import chess.ChessGame;
 import model.GameData;
+import model.ListGameRequest;
 
 import java.util.List;
 import java.util.HashMap;
@@ -33,15 +34,14 @@ public class MemoryGameDAO implements GameDAO{
         return games.get(gameID);
     }
 
-    public List<GameData> listGames(String username) throws DataAccessException {
-        List<GameData> userGames = new ArrayList<>();
+    public List<ListGameRequest> listGames(String username) throws DataAccessException {
+        List<ListGameRequest> userGames = new ArrayList<>();
         for (GameData g : games.values()) {
-            if ((g.whiteUsername() != null && g.whiteUsername().equals(username)) || (g.blackUsername() != null && g.blackUsername().equals(username))) {
-                userGames.add(g);
-            }
+            userGames.add(new ListGameRequest(g.gameID(), g.gameName(), g.whiteUsername(), g.blackUsername()));
         }
         return userGames;
     }
+
 
     public void updateGame(GameData game) throws DataAccessException {
         if (!games.containsKey(game.gameID())) {

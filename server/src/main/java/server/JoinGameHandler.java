@@ -2,6 +2,10 @@ package server;
 
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
+import exception.BadRequestException;
+import exception.ResponseException;
+import exception.UnauthorizedException;
+import exception.UsernameExistsException;
 import model.JoinGameRequest;
 import service.JoinService;
 import spark.Request;
@@ -24,26 +28,14 @@ public class JoinGameHandler implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         try {
-            if (request.requestMethod().equalsIgnoreCase("PUT")) {
-                String authToken = request.headers("Authorization");
-                if (authToken != null) {
-                    JoinGameRequest joinGameRequest = gson.fromJson(request.body(), JoinGameRequest.class);
-                    joinService.joinGame(authToken, joinGameRequest.gameID(), joinGameRequest.playerColor());
-                    response.status(HttpURLConnection.HTTP_OK);
-                    return "{}";
-                }
-            }
-            response.status(HttpURLConnection.HTTP_BAD_REQUEST);
-            return errorResponse("Invalid request or missing Authorization header");
+            String authToken = request.headers("Authorization");
+            JoinGameRequest joinGameRequest = gson.fromJson(request.body(), JoinGameRequest.class);
+            joinService.joinGame(authToken, joinGameRequest.gameID(), joinGameRequest.playerColor());
+            return "{}";
+        } catch (UnauthorizedException | BadRequestException | UsernameExistsException e) {
+            throw new ResponseException(e.StatusCode(), e.getMessage());
         } catch (DataAccessException e) {
-            response.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            return errorResponse(e.getMessage());
+            throw new ResponseException(500, e.getMessage());
         }
-    }
-
-    private String errorResponse(String message) {
-        Map<String, String> jsonResponse = new HashMap<>();
-        jsonResponse.put("message", message);
-        return gson.toJson(jsonResponse);
     }
 }

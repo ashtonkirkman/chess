@@ -2,6 +2,7 @@ package ServiceTests;
 
 import dataAccess.*;
 import exception.EmptyCredentialsException;
+import exception.UnauthorizedException;
 import exception.UsernameExistsException;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ public class LoginServiceTests {
     }
 
     @Test
-    public void testLogin() throws DataAccessException, EmptyCredentialsException, UsernameExistsException {
+    public void testLogin() throws DataAccessException, EmptyCredentialsException, UsernameExistsException, UnauthorizedException {
         String authToken = registrationService.register(user);
         loginService.logout(authToken);
         authToken = loginService.login(user.username(), user.password());

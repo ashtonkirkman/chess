@@ -5,6 +5,8 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import dataAccess.DataAccessException;
+import exception.ResponseException;
+import exception.UnauthorizedException;
 import service.LoginService;
 import spark.Request;
 import spark.Response;
@@ -27,31 +29,13 @@ public class LogoutHandler implements Route {
     @Override
     public Object handle(Request request, Response response) throws Exception {
         try {
-            if (request.requestMethod().equalsIgnoreCase("DELETE")) {
-                String authToken = request.headers("Authorization");
-                if (authToken != null) {
-                    loginService.logout(authToken);
-                    response.status(HttpURLConnection.HTTP_OK);
-                    return successResponse("{}");
-                }
-            }
-            response.status(HttpURLConnection.HTTP_BAD_REQUEST);
-            return errorResponse("Invalid request or missing Authorization header");
-        } catch (Exception e) {
-            response.status(HttpURLConnection.HTTP_INTERNAL_ERROR);
-            return errorResponse(e.getMessage());
+            String authToken = request.headers("Authorization");
+            loginService.logout(authToken);
+            return "{}";
+        } catch (UnauthorizedException e) {
+            throw new ResponseException(e.StatusCode(), e.getMessage());
+        } catch (DataAccessException e) {
+            throw new ResponseException(500, e.getMessage());
         }
-    }
-
-    private Object successResponse(String message) {
-        Map<String, String> jsonResponse = new HashMap<>();
-        jsonResponse.put("message", message);
-        return gson.toJson(jsonResponse);
-    }
-
-    private Object errorResponse(String message) {
-        Map<String, String> jsonResponse = new HashMap<>();
-        jsonResponse.put("error", message);
-        return gson.toJson(jsonResponse);
     }
 }

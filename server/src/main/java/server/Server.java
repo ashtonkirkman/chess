@@ -33,6 +33,7 @@ public class Server {
         Spark.delete("/session", new LogoutHandler(loginService));
         Spark.post("/game", new CreateGameHandler(joinGameService));
         Spark.put("/game", new JoinGameHandler(joinGameService));
+        Spark.get("/game", new ListGamesHandler(joinGameService));
         Spark.exception(ResponseException.class, this::exceptionHandler);
 
         Spark.awaitInitialization();

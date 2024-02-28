@@ -4,6 +4,7 @@ import dataAccess.DataAccessException;
 
 import dataAccess.UserDAO;
 import dataAccess.MemoryUserDAO;
+import exception.UnauthorizedException;
 import model.UserData;
 
 import dataAccess.AuthDAO;
@@ -28,8 +29,12 @@ public class LoginService {
         return authToken;
     }
 
-    public void logout(String authToken) throws DataAccessException {
-        authDAO.deleteAuth(authToken);
+    public void logout(String authToken) throws DataAccessException, UnauthorizedException {
+        try {
+            authDAO.deleteAuth(authToken);
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException("Error: Unauthorized");
+        }
     }
 
 }
