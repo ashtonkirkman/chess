@@ -3,8 +3,6 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.ArrayList;
-import java.util.List;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -143,6 +141,9 @@ public class ChessGame {
     }
 
     private boolean canCastleKingside(TeamColor teamTurn) {
+        if (isInCheck(teamTurn)) {
+            return false;
+        }
         ChessPosition kingPosition = null;
         ChessPosition rookPosition = null;
         ChessPiece king = null;
@@ -172,6 +173,7 @@ public class ChessGame {
         }
         testMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null));
         if(isInCheck(teamTurn)) {
+            undoMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null), null);
             return true;
         }
         undoMove(new ChessMove(kingPosition, new ChessPosition(kingPosition.getRow(), i), null), null);
@@ -179,6 +181,9 @@ public class ChessGame {
     }
 
     private boolean canCastleQueenside(TeamColor teamTurn) {
+        if (isInCheck(teamTurn)) {
+            return false;
+        }
         ChessPosition kingPosition = null;
         ChessPosition rookPosition = null;
         ChessPiece king = null;
@@ -246,6 +251,14 @@ public class ChessGame {
             teamTurn = TeamColor.BLACK;
         } else {
             teamTurn = TeamColor.WHITE;
+        }
+    }
+
+    private void attemptToMakeMove(ChessMove move) {
+        try {
+            this.makeMove(move);
+        } catch (InvalidMoveException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
