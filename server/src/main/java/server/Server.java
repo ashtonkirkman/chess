@@ -11,14 +11,29 @@ import java.util.Map;
 
 public class Server {
 
-    private UserDAO userDAO = new MemoryUserDAO();
-    private AuthDAO authDAO = new MemoryAuthDAO();
-    private GameDAO gameDAO = new MemoryGameDAO();
-    private LoginService loginService = new LoginService(userDAO, authDAO);
-    private RegistrationService registrationService = new RegistrationService(userDAO, authDAO);
-    private JoinService joinGameService = new JoinService(userDAO, authDAO, gameDAO);
-    private ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
+    private UserDAO userDAO;
+    private AuthDAO authDAO;
+    private GameDAO gameDAO;
+    private LoginService loginService;
+    private RegistrationService registrationService;
+    private JoinService joinGameService;
+    private ClearService clearService;
     private Gson gson = new Gson();
+
+    // Server constructor
+    public Server(){
+        try {
+            authDAO = new MySqlAuthDAO();
+            userDAO = new MySqlUserDAO();
+            gameDAO = new MySqlGameDAO();
+        } catch (DataAccessException e) {
+            System.out.printf(e.getMessage());
+        }
+        loginService = new LoginService(userDAO, authDAO);
+        registrationService = new RegistrationService(userDAO, authDAO);
+        joinGameService = new JoinService(userDAO, authDAO, gameDAO);
+        clearService = new ClearService(userDAO, authDAO, gameDAO);
+    }
 
     public int run(int desiredPort) {
 
