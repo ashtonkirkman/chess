@@ -97,6 +97,4 @@
             <systemPath>${pom.basedir}/lib/passoff-dependencies.jar</systemPath>
         </dependency>
     </dependencies>
-
-
 </project>

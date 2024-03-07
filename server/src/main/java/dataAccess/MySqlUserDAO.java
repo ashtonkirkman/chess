@@ -12,22 +12,67 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     public void createUser(UserData user) throws DataAccessException {
-        var statement = "INSERT INTO user_data (username, password, email, json) VALUES(?,?,?,?)";
-        var json = new Gson().toJson(user);
-        executeUpdate(statement, user.username(), user.password(), user.email(), json);
+        if (usernameExists(user.username())) {
+            throw new DataAccessException("Error: Username already exists");
+        }
+        if (emailExists(user.email())) {
+            throw new DataAccessException("Error: Email already in use");
+        }
+        var statement = "INSERT INTO user_data (username, password, email) VALUES(?,?,?)";
+        executeUpdate(statement, user.username(), user.password(), user.email());
     }
 
-    public UserData getUser(String username, String password) throws DataAccessException {
+    public boolean emailExists(String email) throws DataAccessException {
+        var statement = "SELECT email FROM user_data WHERE email = ?";
         try (var conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT json FROM user_data WHERE username = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, email);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException("Error: Failed to retrieve email");
+        }
+        return false;
+    }
+
+    public boolean usernameExists(String username) throws DataAccessException {
+        var statement = "SELECT username FROM user_data WHERE username = ?";
+        try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement)) {
                 ps.setString(1, username);
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
-                        return readUser(rs);
+                        return true;
                     }
                 }
             }
+        } catch (Exception e) {
+            throw new DataAccessException("Error: Failed to retrieve username");
+        }
+        return false;
+    }
+
+    public UserData getUser(String username, String password) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user_data WHERE username = ?";
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        UserData user = readUser(rs);
+                        if (!user.password().equals(password)) {
+                            throw new DataAccessException("Error: Incorrect password");
+                        }
+                        return user;
+                    }
+                }
+            }
+        } catch (DataAccessException e) {
+            throw e;
         } catch (Exception e) {
             throw new DataAccessException("Error: Failed to get user");
         }
@@ -40,8 +85,10 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     private UserData readUser(ResultSet rs) throws SQLException {
-        var json = rs.getString("json");
-        var user = new Gson().fromJson(json, UserData.class);
+        var username = rs.getString("username");
+        var password = rs.getString("password");
+        var email = rs.getString("email");
+        var user = new UserData(username, password, email);
         return user;
     }
 
@@ -66,10 +113,8 @@ public class MySqlUserDAO implements UserDAO {
             CREATE TABLE IF NOT EXISTS user_data (
               username VARCHAR(256) NOT NULL PRIMARY KEY,
               password VARCHAR(256) NOT NULL,
-              email VARCHAR(256) NOT NULL,
-              INDEX(username),
-              INDEX(password),
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+              email VARCHAR(256) NOT NULL
+            );
             """
     };
 
