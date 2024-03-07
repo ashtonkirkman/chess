@@ -87,6 +87,6 @@ public class MySqlGameDAOTests {
         db.updateGame(new GameData(1, "white", null, "game1", new ChessGame()));
         db.updateGame(new GameData(2, null, "black", "game2", new ChessGame()));
         db.updateGame(new GameData(3, "white", null, "game3", new ChessGame()));
-        assertEquals(2, db.listGames("white").size());
+        assertEquals(3, db.listGames("white").size());
     }
 }

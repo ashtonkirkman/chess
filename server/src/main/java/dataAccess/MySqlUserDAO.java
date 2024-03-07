@@ -2,6 +2,8 @@ package dataAccess;
 
 import com.google.gson.Gson;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.sql.*;
 import static java.sql.Types.NULL;
 
@@ -18,8 +20,9 @@ public class MySqlUserDAO implements UserDAO {
         if (emailExists(user.email())) {
             throw new DataAccessException("Error: Email already in use");
         }
+        String hashedPassword = encodePassword(user.password());
         var statement = "INSERT INTO user_data (username, password, email) VALUES(?,?,?)";
-        executeUpdate(statement, user.username(), user.password(), user.email());
+        executeUpdate(statement, user.username(), hashedPassword, user.email());
     }
 
     public boolean emailExists(String email) throws DataAccessException {
@@ -56,7 +59,14 @@ public class MySqlUserDAO implements UserDAO {
         return false;
     }
 
+    String encodePassword(String password) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedPassword = encoder.encode(password);
+        return hashedPassword;
+    }
+
     public UserData getUser(String username, String password) throws DataAccessException {
+        String hashedPassword = encodePassword(password);
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, password, email FROM user_data WHERE username = ?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -64,7 +74,7 @@ public class MySqlUserDAO implements UserDAO {
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         UserData user = readUser(rs);
-                        if (!user.password().equals(password)) {
+                        if (!user.password().equals(hashedPassword)) {
                             throw new DataAccessException("Error: Incorrect password");
                         }
                         return user;
