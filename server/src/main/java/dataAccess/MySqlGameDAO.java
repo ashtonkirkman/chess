@@ -60,11 +60,9 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public List<ListGameRequest> listGames(String username) throws DataAccessException {
-        var statement = "SELECT * FROM game_data WHERE white_username = ? OR black_username = ?";
+        var statement = "SELECT * FROM game_data";
         try (var conn = DatabaseManager.getConnection()) {
             try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1, username);
-                ps.setString(2, username);
                 try (var rs = ps.executeQuery()) {
                     var games = new ArrayList<ListGameRequest>();
                     while (rs.next()) {

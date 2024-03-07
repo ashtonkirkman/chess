@@ -43,8 +43,25 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     public void deleteAuth(String authToken) throws DataAccessException {
+        if (!authExists(authToken)) {
+            throw new DataAccessException("Error: Auth token not found");
+        }
         var statement = "DELETE FROM auth_data WHERE auth_token = ?";
         executeUpdate(statement, authToken);
+    }
+
+    private boolean authExists(String authToken) throws DataAccessException {
+        var statement = "SELECT * FROM auth_data WHERE auth_token = ?";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    return rs.next();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: Failed to check if auth token exists");
+        }
     }
 
     public void clear() throws DataAccessException {

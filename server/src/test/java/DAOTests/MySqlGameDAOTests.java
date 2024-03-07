@@ -77,4 +77,16 @@ public class MySqlGameDAOTests {
         db.clear();
         assertThrows(DataAccessException.class, () -> db.getGame(gameID));
     }
+
+    @Test
+    public void testListGames() throws DataAccessException {
+        db.createGame("game1");
+        db.createGame("game2");
+        db.createGame("game3");
+
+        db.updateGame(new GameData(1, "white", null, "game1", new ChessGame()));
+        db.updateGame(new GameData(2, null, "black", "game2", new ChessGame()));
+        db.updateGame(new GameData(3, "white", null, "game3", new ChessGame()));
+        assertEquals(2, db.listGames("white").size());
+    }
 }

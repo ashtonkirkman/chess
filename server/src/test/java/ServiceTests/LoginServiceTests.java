@@ -47,4 +47,11 @@ public class LoginServiceTests {
         registrationService.register(user);
         loginService.login(user.username(), user.password());
     }
+
+    @Test
+    public void testLogoutTwice() throws DataAccessException, EmptyCredentialsException, UsernameExistsException, UnauthorizedException {
+        String authToken = registrationService.register(user);
+        loginService.logout(authToken);
+        assertThrows(UnauthorizedException.class, () -> loginService.logout(authToken));
+    }
 }
