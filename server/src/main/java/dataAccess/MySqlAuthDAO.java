@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import static java.sql.Types.NULL;
 
-public class MySqlAuthDAO {
+public class MySqlAuthDAO implements AuthDAO {
 
     public MySqlAuthDAO() throws DataAccessException {
         configureDatabase();

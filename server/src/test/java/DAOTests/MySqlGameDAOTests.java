@@ -3,7 +3,6 @@ package DAOTests;
 import chess.ChessGame;
 import dataAccess.*;
 import model.GameData;
-import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,5 +69,12 @@ public class MySqlGameDAOTests {
     public void testUpdateGameNotFound() throws DataAccessException {
         GameData game = new GameData(0, "white", "black", "newGameName", new ChessGame());
         assertThrows(DataAccessException.class, () -> db.updateGame(game));
+    }
+
+    @Test
+    public void testClear() throws DataAccessException {
+        int gameID = db.createGame("game");
+        db.clear();
+        assertThrows(DataAccessException.class, () -> db.getGame(gameID));
     }
 }

@@ -1,6 +1,5 @@
 package dataAccess;
 
-import exception.UnauthorizedException;
 import model.AuthData;
 
 import java.util.*;
@@ -11,6 +10,7 @@ public class MemoryAuthDAO implements AuthDAO{
     public MemoryAuthDAO() {
         this.authTokens = new ArrayList<AuthData>();
     }
+
     public String createAuth(String username) throws DataAccessException {
         String authToken = UUID.randomUUID().toString();
         AuthData auth = new AuthData(authToken, username);
