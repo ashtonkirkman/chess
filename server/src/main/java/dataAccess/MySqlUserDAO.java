@@ -9,6 +9,8 @@ import static java.sql.Types.NULL;
 
 public class MySqlUserDAO implements UserDAO {
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     public MySqlUserDAO() throws DataAccessException {
         configureDatabase();
     }
@@ -59,14 +61,12 @@ public class MySqlUserDAO implements UserDAO {
         return false;
     }
 
-    String encodePassword(String password) {
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String hashedPassword = encoder.encode(password);
+    private String encodePassword(String password) {
+        String hashedPassword = passwordEncoder.encode(password);
         return hashedPassword;
     }
 
     public UserData getUser(String username, String password) throws DataAccessException {
-        String hashedPassword = encodePassword(password);
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, password, email FROM user_data WHERE username = ?";
             try (var ps = conn.prepareStatement(statement)) {
@@ -74,16 +74,15 @@ public class MySqlUserDAO implements UserDAO {
                 try (var rs = ps.executeQuery()) {
                     if (rs.next()) {
                         UserData user = readUser(rs);
-                        if (!user.password().equals(hashedPassword)) {
+                        if (passwordEncoder.matches(password, user.password())){
+                            return user;
+                        } else {
                             throw new DataAccessException("Error: Incorrect password");
                         }
-                        return user;
                     }
                 }
             }
-        } catch (DataAccessException e) {
-            throw e;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DataAccessException("Error: Failed to get user");
         }
         return null;

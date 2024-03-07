@@ -39,6 +39,13 @@ public class MySqlUserDAOTests {
     }
 
     @Test
+    public void getUser() throws DataAccessException {
+        UserData user = new UserData("akirkman", "Ashsmash47!", "kirkmash13@gmail.com");
+        db.createUser(user);
+        assertDoesNotThrow(() -> db.getUser(user.username(), user.password()));
+    }
+
+    @Test
     public void testCreateUserTwice() throws DataAccessException {
         UserData user = new UserData("user", "pass", "email");
         db.createUser(user);
