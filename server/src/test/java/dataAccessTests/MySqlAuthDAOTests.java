@@ -1,4 +1,4 @@
-package DAOTests;
+package dataAccessTests;
 
 import chess.ChessGame;
 import dataAccess.*;
