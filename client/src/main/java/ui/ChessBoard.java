@@ -13,6 +13,10 @@ public class ChessBoard {
     private static final int LINE_WIDTH_IN_CHARS = 1;
 
     public static void main(String[] args) {
+        drawChessBoard();
+    }
+
+    public static void drawChessBoard() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         drawBlackHeaders(out);
@@ -24,7 +28,6 @@ public class ChessBoard {
         drawWhiteHeaders(out);
         drawWhiteChessBoard(out);
         drawWhiteHeaders(out);
-
 
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_WHITE);
