@@ -29,8 +29,8 @@ public class ChessBoard {
         drawWhiteChessBoard(out);
         drawWhiteHeaders(out);
 
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(RESET_BG_COLOR);
+        out.print(RESET_TEXT);
     }
 
     private static void drawWhiteHeaders(PrintStream out) {

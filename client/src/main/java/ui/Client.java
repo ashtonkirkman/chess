@@ -12,7 +12,7 @@ public class Client {
 
     public Client(String serverUrl) {
         this.chessBoard = new ChessBoard();
-        this.server = new ServerFacade(new ClientCommunicator());
+        this.server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
 
@@ -59,15 +59,49 @@ public class Client {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             System.out.println("Command: " + cmd + " Params: " + Arrays.toString(params) + " State: " + state);
-            return switch(cmd) {
-                case "quit" -> "Goodbye!";
-                case "register" -> register(params);
-                case "logout" -> logout();
-                default -> help();
-            };
+            if (state == State.LOGGED_OUT) {
+                return switch(cmd) {
+                    case "quit" -> "Goodbye!";
+                    case "login" -> login(params);
+                    case "register" -> register(params);
+                    case "logout" -> logout();
+                    case "help" -> help();
+                    default -> "Unknown command: " + cmd;
+                };
+            }
+            else {
+                return switch(cmd) {
+                    case "quit" -> "Goodbye!";
+                    case "create" -> create(params);
+//                    case "list" -> list();
+                    case "join" -> join(params);
+//                    case "observe" -> observe(params);
+                    case "logout" -> logout();
+                    case "help" -> help();
+                    default -> "Unknown command: " + cmd;
+                };
+            }
         } catch (Throwable e) {
             return e.toString();
         }
+    }
+
+    public String create(String... params) {
+        if (params.length != 1) {
+            return "Usage: create <NAME>";
+        }
+        var name = params[0];
+        return "Created game " + name;
+    }
+
+    public String join(String... params) {
+        if (params.length < 1) {
+            return "Usage: join <ID> [WHITE|BLACK|<empty>]";
+        }
+        var id = params[0];
+        var color = (params.length > 1) ? params[1] : "";
+        chessBoard.drawChessBoard();
+        return "Joined game " + id + " as " + color;
     }
 
     public String register(String... params) {
@@ -77,7 +111,6 @@ public class Client {
         var username = params[0];
         var password = params[1];
         var email = params[2];
-//        server.register(username, password, email);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
     }
@@ -85,6 +118,16 @@ public class Client {
     public String logout() {
         state = State.LOGGED_OUT;
         return "Logged out";
+    }
+
+    public String login(String... params) {
+        if (params.length != 2) {
+            return "Usage: login <USERNAME> <PASSWORD>";
+        }
+        var username = params[0];
+        var password = params[1];
+        state = State.LOGGED_IN;
+        return "Logged in as " + username;
     }
 
     public String help() {

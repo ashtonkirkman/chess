@@ -20,7 +20,6 @@ public class Server {
     private ClearService clearService;
     private Gson gson = new Gson();
 
-    // Server constructor
     public Server(){
         try {
             authDAO = new MySqlAuthDAO();
