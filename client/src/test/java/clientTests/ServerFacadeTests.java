@@ -1,5 +1,6 @@
 package clientTests;
 
+import dataAccess.DataAccessException;
 import exception.ResponseException;
 import model.ListGameResponse;
 import org.junit.jupiter.api.*;
@@ -15,7 +16,7 @@ public class ServerFacadeTests {
     private static ServerFacade serverFacade;
 
     @BeforeAll
-    public static void init() {
+    public static void init() throws ResponseException, IOException {
         server = new Server();
         var port = server.run(8080);
         System.out.println("Started test HTTP server on " + port);
@@ -23,10 +24,9 @@ public class ServerFacadeTests {
     }
 
     @AfterAll
-    static void stopServer() {
+    static void stopServer() throws ResponseException, IOException {
         server.stop();
     }
-
 
     @Test
     public void sampleTest() {
@@ -35,22 +35,26 @@ public class ServerFacadeTests {
 
     @Test
     public void testRegister() throws IOException, ResponseException {
-        String authToken = serverFacade.register("testuser", "testpassword", "test@example.com");
-        Assertions.assertNotNull(authToken); // Check if authToken is not null
+        String authToken = serverFacade.register("bobby", "testpassword", "newemail");
+        Assertions.assertNotNull(authToken);
+        serverFacade.clear(authToken);
     }
 
     @Test
     public void testRegisterFailure() throws IOException, ResponseException {
-        serverFacade.register("existinguser", "existingpassword", "existing@example.com");
+        String authToken = serverFacade.register("existinguser", "existingpassword", "existing@example.com");
         Assertions.assertThrows(ResponseException.class, () -> {
             serverFacade.register("existinguser", "existingpassword", "existing@example.com");
         });
+        serverFacade.clear(authToken);
     }
 
     @Test
     public void testLogin() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
+        authToken = serverFacade.login("testuser", "testpassword");
         Assertions.assertNotNull(authToken); // Check if authToken is not null
+        serverFacade.clear(authToken);
     }
 
     @Test
@@ -62,10 +66,11 @@ public class ServerFacadeTests {
 
     @Test
     public void testLogout() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         Assertions.assertDoesNotThrow(() -> {
             serverFacade.logout(authToken);
         });
+        serverFacade.clear(authToken);
     }
 
     @Test
@@ -77,66 +82,70 @@ public class ServerFacadeTests {
 
     @Test
     public void testCreateGame() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         Assertions.assertDoesNotThrow(() -> {
             serverFacade.createGame(authToken, "Test Game");
         });
+        serverFacade.clear(authToken);
     }
 
     @Test
     public void testCreateGameFailure() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         Assertions.assertThrows(ResponseException.class, () -> {
             serverFacade.createGame(authToken, null);
         });
+        serverFacade.clear(authToken);
     }
 
-    // Positive test for joinGame method
     @Test
     public void testJoinGame() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("hello", "hi", "hola");
+        serverFacade.createGame(authToken, "Test Game");
         Assertions.assertDoesNotThrow(() -> {
-            serverFacade.joinGame(authToken, 5, null);
+            serverFacade.joinGame(authToken, 1, null);
         });
+        serverFacade.clear(authToken);
     }
 
-    // Negative test for joinGame method
     @Test
     public void testJoinGameFailure() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         Assertions.assertThrows(ResponseException.class, () -> {
             serverFacade.joinGame(authToken, 5, "WHITE");
         });
+        serverFacade.clear(authToken);
     }
 
-    // Positive test for observeGame method
     @Test
     public void testObserveGame() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
+        serverFacade.createGame(authToken, "Test Game");
         Assertions.assertDoesNotThrow(() -> {
-            serverFacade.observeGame(authToken, 5);
+            serverFacade.observeGame(authToken, 1);
         });
+        serverFacade.clear(authToken);
     }
 
-    // Negative test for observeGame method
     @Test
     public void testObserveGameFailure() throws IOException, ResponseException{
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         Assertions.assertThrows(ResponseException.class, () -> {
             serverFacade.observeGame(authToken, 1111);
         });
+        serverFacade.clear(authToken);
     }
 
     @Test
     public void testListGames() throws IOException, ResponseException {
-        String authToken = serverFacade.login("testuser", "testpassword");
+        String authToken = serverFacade.register("testuser", "testpassword", "testemail");
         ListGameResponse gameResponse = serverFacade.listGames(authToken);
         Assertions.assertNotNull(gameResponse);
+        serverFacade.clear(authToken);
     }
 
-    // Negative test for listGames method
     @Test
-    public void testListGamesFailure() throws IOException, ResponseException {
+    public void testListGamesFailure() {
         Assertions.assertThrows(ResponseException.class, () -> {
             serverFacade.listGames("invalid auth token");
         });

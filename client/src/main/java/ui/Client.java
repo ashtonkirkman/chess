@@ -79,6 +79,7 @@ public class Client {
                     case "register" -> register(params);
                     case "logout" -> logout();
                     case "help" -> help();
+                    case "clear" -> clear();
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -106,6 +107,11 @@ public class Client {
         var name = params[0];
         serverFacade.createGame(authToken, name);
         return "Created game " + name;
+    }
+
+    public String clear() throws ResponseException, IOException {
+        serverFacade.clear(authToken);
+        return "Cleared all games";
     }
 
     public String list() throws ResponseException, IOException {

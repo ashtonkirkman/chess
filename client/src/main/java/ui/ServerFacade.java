@@ -15,6 +15,11 @@ public class ServerFacade {
         this.serverUrl = url;
     }
 
+    public void clear(String authToken) throws IOException, ResponseException {
+        String urlString = serverUrl + "/db";
+        communicator.doDelete(urlString, authToken);
+    }
+
     public String register(String username, String password, String email) throws ResponseException, IOException {
         String urlString = serverUrl + "/user";
         UserData user = new UserData(username, password, email);
