@@ -65,7 +65,8 @@ public class ServerFacadeTests {
     // Positive test for logout method
     @Test
     public void testLogout() throws IOException, ResponseException {
-        serverFacade.logout("validAuthToken"); // Assuming validAuthToken is a valid token
+        String authToken = serverFacade.login("testuser", "testpassword");
+        serverFacade.logout(authToken); // Assuming validAuthToken is a valid token
         // If no exception is thrown, logout was successful
     }
 
