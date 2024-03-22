@@ -97,17 +97,18 @@ public class ChessBoard {
     private static void drawRowOfSquares(PrintStream out, int boardRow, String perspective) {
 
         drawHeader(out, THIN_SPACE+(boardRow + 1)+THIN_SPACE);
+        boolean isWhitePerspective = perspective.equalsIgnoreCase("white");
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-
             String piece = selectPiece(boardRow, boardCol, perspective);
-            if (boardRow % 2 == 0) {
-                if (boardCol % 2 == 0) {
+
+            if ((boardRow % 2 == 0 && boardCol % 2 == 0) || (boardRow % 2 != 0 && boardCol % 2 != 0)) {
+                if (isWhitePerspective) {
                     printDarkSquare(out, piece);
                 } else {
                     printLightSquare(out, piece);
                 }
             } else {
-                if (boardCol % 2 == 0) {
+                if (isWhitePerspective) {
                     printLightSquare(out, piece);
                 } else {
                     printDarkSquare(out, piece);

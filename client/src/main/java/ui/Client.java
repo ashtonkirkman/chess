@@ -6,6 +6,8 @@ import server.Server;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
+
+import static java.util.Objects.isNull;
 import static ui.EscapeSequences.*;
 
 public class Client {
@@ -21,15 +23,7 @@ public class Client {
         this.serverUrl = serverUrl;
     }
 
-    public static void main(String[] args) {
-        var serverUrl = "http://localhost:8080";
-        String portNumber = "8080";
-        if (args.length == 1) {
-            serverUrl = args[0];
-        } else if (args.length == 2) {
-            portNumber = args[1];
-            serverUrl = "http://" + args[0] + ":" + portNumber;
-        }
+    public static void start(String serverUrl, String portNumber) {
 
         int port = Integer.parseInt(portNumber);
         Server server = new Server();
@@ -122,7 +116,9 @@ public class Client {
         for (var game : games.games()) {
             String gameId = String.valueOf(game.gameID());
             String gameName = game.gameName();
-            gameInfo.append(gameId).append(". ").append(gameName);
+            String whiteUser = game.whiteUsername();
+            String blackUser = game.blackUsername();
+            gameInfo.append(gameId).append(". ").append(gameName).append(", White: ").append(isNull(whiteUser) ? "None" : whiteUser).append(", Black: ").append(isNull(blackUser) ? "None" : blackUser);
             if (++count < numGames) {
                 gameInfo.append("\n");
             }
