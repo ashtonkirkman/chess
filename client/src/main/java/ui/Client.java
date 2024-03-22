@@ -37,7 +37,7 @@ public class Client {
 
         var client = new Client(serverUrl);
         client.run();
-//        server.stop();
+        server.stop();
     }
 
     public void run() {
