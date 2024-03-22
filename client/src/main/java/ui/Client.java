@@ -150,6 +150,7 @@ public class Client {
         }
         var id = params[0];
         serverFacade.observeGame(authToken, Integer.parseInt(id));
+        chessBoard.drawChessBoard();
         return "Joined game " + id + " as an observer";
     }
 
