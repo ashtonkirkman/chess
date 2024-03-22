@@ -67,7 +67,6 @@ public class Client {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-//            System.out.println("Command: " + cmd + " Params: " + Arrays.toString(params) + " State: " + state);
             if (state == State.LOGGED_OUT) {
                 return switch(cmd) {
                     case "quit" -> "Goodbye!";
@@ -82,9 +81,9 @@ public class Client {
                 return switch(cmd) {
                     case "quit" -> "Goodbye!";
                     case "create" -> create(params);
-//                    case "list" -> list();
+                    case "list" -> list();
                     case "join" -> join(params);
-//                    case "observe" -> observe(params);
+                    case "observe" -> observe(params);
                     case "logout" -> logout();
                     case "help" -> help();
                     default -> "Unknown command: " + cmd;
@@ -104,15 +103,43 @@ public class Client {
         return "Created game " + name;
     }
 
+    public String list() throws ResponseException, IOException {
+        StringBuilder gameInfo = new StringBuilder();
+        var games = server.listGames(authToken);
+        int numGames = games.games().size();
+        int count = 0;
+        for (var game : games.games()) {
+            String gameId = String.valueOf(game.gameID());
+            String gameName = game.gameName();
+            gameInfo.append(gameId).append(". ").append(gameName);
+            if (++count < numGames) {
+                gameInfo.append("\n");
+            }
+        }
+        return gameInfo.toString();
+    }
+
     public String join(String... params) throws ResponseException, IOException {
         if (params.length < 1) {
             return "Usage: join <ID> [WHITE|BLACK|<empty>]";
         }
         var id = params[0];
-        var color = (params.length > 1) ? params[1] : "";
+        var color = (params.length > 1) ? params[1] : null;
         server.joinGame(authToken, Integer.parseInt(id), color);
         chessBoard.drawChessBoard();
+        if(color == null) {
+            return "Joined game " + id + " as an observer";
+        }
         return "Joined game " + id + " as " + color;
+    }
+
+    public String observe(String... params) throws ResponseException, IOException {
+        if (params.length != 1) {
+            return "Usage: observe <ID>";
+        }
+        var id = params[0];
+        server.observeGame(authToken, Integer.parseInt(id));
+        return "Joined game " + id + " as an observer";
     }
 
     public String register(String... params) throws ResponseException, IOException {

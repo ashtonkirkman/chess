@@ -40,9 +40,13 @@ public class JoinService {
     public int createGame(String authToken, String gameName) throws DataAccessException, UnauthorizedException {
         try {
             authDAO.getAuth(authToken);
-            return gameDAO.createGame(gameName);
         } catch (DataAccessException e) {
             throw new UnauthorizedException("Error: Unauthorized");
+        }
+        try {
+            return gameDAO.createGame(gameName);
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException(e.getMessage());
         }
     }
 

@@ -9,35 +9,27 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ClientCommunicator {
-    public void doGet(String urlString) throws IOException {
+    public String doGet(String urlString, String authToken) throws IOException, ResponseException {
         URL url = new URL(urlString);
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
         connection.setReadTimeout(5000);
         connection.setRequestMethod("GET");
-
-        // Set HTTP request headers, if necessary
-        // connection.addRequestProperty("Accept", "text/html");
-        // connection.addRequestProperty("Authorization", "fjaklc8sdfjklakl");
-
+        connection.setRequestProperty("Authorization", authToken); // Set authorization header
         connection.connect();
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            // Get HTTP response headers, if necessary
-            // Map<String, List<String>> headers = connection.getHeaderFields();
-
-            // OR
-
-            //connection.getHeaderField("Content-Length");
-
             InputStream responseBody = connection.getInputStream();
-            // Read and process response body from InputStream ...
-        } else {
+            return readInputStream(responseBody);
+        }
+        else {
             // SERVER RETURNED AN HTTP ERROR
-
-            InputStream responseBody = connection.getErrorStream();
-            // Read and process error response body from InputStream ...
+            InputStream errorStream = connection.getErrorStream();
+            String response = readInputStream(errorStream);
+            ErrorResponse errorResponse = new Gson().fromJson(response, ErrorResponse.class);
+            var status = connection.getResponseCode();
+            throw new ResponseException(status, errorResponse.message());
         }
     }
 
@@ -87,6 +79,35 @@ public class ClientCommunicator {
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             // Handle error response
+            InputStream errorStream = connection.getErrorStream();
+            String response = readInputStream(errorStream);
+            ErrorResponse errorResponse = new Gson().fromJson(response, ErrorResponse.class);
+            var status = connection.getResponseCode();
+            throw new ResponseException(status, errorResponse.message());
+        }
+    }
+
+    public void doPut(String urlString, String requestBody, String authToken) throws IOException, ResponseException {
+        URL url = new URL(urlString);
+
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+        connection.setReadTimeout(5000);
+        connection.setRequestMethod("PUT");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        if (authToken != null && !authToken.isEmpty()) {
+            connection.setRequestProperty("Authorization", authToken);
+        }
+
+        connection.connect();
+
+        try(OutputStream outputStream = connection.getOutputStream()) {
+            outputStream.write(requestBody.getBytes());
+        }
+
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             InputStream errorStream = connection.getErrorStream();
             String response = readInputStream(errorStream);
             ErrorResponse errorResponse = new Gson().fromJson(response, ErrorResponse.class);

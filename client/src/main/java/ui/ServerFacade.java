@@ -50,7 +50,21 @@ public class ServerFacade {
         String urlString = serverUrl + "/game";
         JoinGameRequest joinGameRequest = new JoinGameRequest(gameId, playerColor);
         String requestBody = new Gson().toJson(joinGameRequest);
-        communicator.doPost(urlString, requestBody, authToken);
+        communicator.doPut(urlString, requestBody, authToken);
+    }
+
+    public void observeGame(String authToken, int gameId) throws IOException, ResponseException {
+        String urlString = serverUrl + "/game";
+        JoinGameRequest joinGameRequest = new JoinGameRequest(gameId, null);
+        String requestBody = new Gson().toJson(joinGameRequest);
+        communicator.doPut(urlString, requestBody, authToken);
+    }
+
+    public ListGameResponse listGames(String authToken) throws IOException, ResponseException {
+        String urlString = serverUrl + "/game";
+        String responseBody = communicator.doGet(urlString, authToken);
+        ListGameResponse listGameResponse = new Gson().fromJson(responseBody, ListGameResponse.class);
+        return listGameResponse;
     }
 
     public static void main(String[] args) {
