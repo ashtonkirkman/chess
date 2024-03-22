@@ -1,5 +1,9 @@
 package ui;
 
+import exception.ResponseException;
+import server.Server;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
 import static ui.EscapeSequences.*;
@@ -8,6 +12,7 @@ public class Client {
     private ChessBoard chessBoard;
     private ServerFacade server;
     private final String serverUrl;
+    private String authToken;
     private State state = State.LOGGED_OUT;
 
     public Client(String serverUrl) {
@@ -21,6 +26,10 @@ public class Client {
         if (args.length == 1) {
             serverUrl = args[0];
         }
+
+        String portNumber = "8080";
+        int port = Integer.parseInt(portNumber);
+        new Server().run(port);
 
         var client = new Client(serverUrl);
         client.run();
@@ -38,7 +47,7 @@ public class Client {
                 String result = eval(line);
                 System.out.println(result);
             } catch (Throwable e) {
-                var msg = e.toString();
+                var msg = e.getMessage();
                 System.out.print(msg);
             }
         }
@@ -58,7 +67,7 @@ public class Client {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            System.out.println("Command: " + cmd + " Params: " + Arrays.toString(params) + " State: " + state);
+//            System.out.println("Command: " + cmd + " Params: " + Arrays.toString(params) + " State: " + state);
             if (state == State.LOGGED_OUT) {
                 return switch(cmd) {
                     case "quit" -> "Goodbye!";
@@ -82,50 +91,55 @@ public class Client {
                 };
             }
         } catch (Throwable e) {
-            return e.toString();
+            return e.getMessage();
         }
     }
 
-    public String create(String... params) {
+    public String create(String... params) throws ResponseException, IOException {
         if (params.length != 1) {
             return "Usage: create <NAME>";
         }
         var name = params[0];
+        server.createGame(authToken, name);
         return "Created game " + name;
     }
 
-    public String join(String... params) {
+    public String join(String... params) throws ResponseException, IOException {
         if (params.length < 1) {
             return "Usage: join <ID> [WHITE|BLACK|<empty>]";
         }
         var id = params[0];
         var color = (params.length > 1) ? params[1] : "";
+        server.joinGame(authToken, Integer.parseInt(id), color);
         chessBoard.drawChessBoard();
         return "Joined game " + id + " as " + color;
     }
 
-    public String register(String... params) {
+    public String register(String... params) throws ResponseException, IOException {
         if (params.length != 3) {
             return "Usage: register <USERNAME> <PASSWORD> <EMAIL>";
         }
         var username = params[0];
         var password = params[1];
         var email = params[2];
+        authToken = server.register(username, password, email);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
     }
 
-    public String logout() {
+    public String logout() throws ResponseException, IOException {
         state = State.LOGGED_OUT;
+        server.logout(authToken);
         return "Logged out";
     }
 
-    public String login(String... params) {
+    public String login(String... params) throws ResponseException, IOException {
         if (params.length != 2) {
             return "Usage: login <USERNAME> <PASSWORD>";
         }
         var username = params[0];
         var password = params[1];
+        authToken = server.login(username, password);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
     }

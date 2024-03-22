@@ -1,8 +1,7 @@
 package ui;
-import model.AuthData;
-import model.LoginRequest;
+import exception.ResponseException;
+import model.*;
 import com.google.gson.Gson;
-import model.UserData;
 import server.Server;
 
 import java.io.IOException;
@@ -16,29 +15,42 @@ public class ServerFacade {
         this.serverUrl = url;
     }
 
-    public String register(String username, String password, String email) throws IOException {
+    public String register(String username, String password, String email) throws ResponseException, IOException {
         String urlString = serverUrl + "/user";
         UserData user = new UserData(username, password, email);
         String requestBody = new Gson().toJson(user);
-        String responseBody = communicator.doPost(urlString, requestBody);
-        AuthData authData = new Gson().fromJson(responseBody, AuthData.class);
-//        return authData.authToken();
-        return responseBody;
-    }
-
-
-    public String login(String username, String password) throws IOException {
-        LoginRequest request = new LoginRequest(username, password);
-        String urlString = serverUrl + "/session";
-        String requestBody = new Gson().toJson(request);
-        String responseBody = communicator.doPost(urlString, requestBody);
+        String responseBody = communicator.doPost(urlString, requestBody, null);
         AuthData authData = new Gson().fromJson(responseBody, AuthData.class);
         return authData.authToken();
     }
 
-    public String logout(String authToken) throws IOException {
+
+    public String login(String username, String password) throws IOException, ResponseException {
+        LoginRequest request = new LoginRequest(username, password);
         String urlString = serverUrl + "/session";
-        return communicator.doDelete(urlString, authToken);
+        String requestBody = new Gson().toJson(request);
+        String responseBody = communicator.doPost(urlString, requestBody, null);
+        AuthData authData = new Gson().fromJson(responseBody, AuthData.class);
+        return authData.authToken();
+    }
+
+    public void logout(String authToken) throws IOException, ResponseException {
+        String urlString = serverUrl + "/session";
+        communicator.doDelete(urlString, authToken);
+    }
+
+    public void createGame(String authToken, String gameName) throws IOException, ResponseException {
+        String urlString = serverUrl + "/game";
+        CreateGameRequest createGameRequest = new CreateGameRequest(gameName);
+        String requestBody = new Gson().toJson(createGameRequest);
+        communicator.doPost(urlString, requestBody, authToken);
+    }
+
+    public void joinGame(String authToken, int gameId, String playerColor) throws IOException, ResponseException {
+        String urlString = serverUrl + "/game";
+        JoinGameRequest joinGameRequest = new JoinGameRequest(gameId, playerColor);
+        String requestBody = new Gson().toJson(joinGameRequest);
+        communicator.doPost(urlString, requestBody, authToken);
     }
 
     public static void main(String[] args) {
@@ -47,12 +59,12 @@ public class ServerFacade {
         new Server().run(port);
         ServerFacade serverFacade = new ServerFacade("http://localhost:8080");
         try {
-            System.out.println(serverFacade.register("user", "password", "email"));
+            System.out.println(serverFacade.register("user1", "password1", "email1"));
             String authToken = serverFacade.login("user", "password");
             System.out.println(authToken);
-            System.out.println(serverFacade.logout(authToken));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | ResponseException e) {
+            var msg = e.getMessage();
+            System.out.print(msg);
         }
     }
 }
