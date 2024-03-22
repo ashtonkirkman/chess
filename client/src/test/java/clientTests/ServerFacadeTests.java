@@ -47,14 +47,12 @@ public class ServerFacadeTests {
         });
     }
 
-    // Positive test for login method
     @Test
     public void testLogin() throws IOException, ResponseException {
         String authToken = serverFacade.login("testuser", "testpassword");
         Assertions.assertNotNull(authToken); // Check if authToken is not null
     }
 
-    // Negative test for login method
     @Test
     public void testLoginFailure() {
         Assertions.assertThrows(ResponseException.class, () -> {
@@ -62,15 +60,14 @@ public class ServerFacadeTests {
         });
     }
 
-    // Positive test for logout method
     @Test
     public void testLogout() throws IOException, ResponseException {
         String authToken = serverFacade.login("testuser", "testpassword");
-        serverFacade.logout(authToken); // Assuming validAuthToken is a valid token
-        // If no exception is thrown, logout was successful
+        Assertions.assertDoesNotThrow(() -> {
+            serverFacade.logout(authToken);
+        });
     }
 
-    // Negative test for logout method
     @Test
     public void testLogoutFailure() {
         Assertions.assertThrows(ResponseException.class, () -> {
@@ -78,41 +75,47 @@ public class ServerFacadeTests {
         });
     }
 
-    // Positive test for createGame method
     @Test
     public void testCreateGame() throws IOException, ResponseException {
-        serverFacade.createGame("validAuthToken", "Test Game");
-        // If no exception is thrown, game creation was successful
+        String authToken = serverFacade.login("testuser", "testpassword");
+        Assertions.assertDoesNotThrow(() -> {
+            serverFacade.createGame(authToken, "Test Game");
+        });
     }
 
-    // Negative test for createGame method
     @Test
-    public void testCreateGameFailure() {
+    public void testCreateGameFailure() throws IOException, ResponseException {
+        String authToken = serverFacade.login("testuser", "testpassword");
         Assertions.assertThrows(ResponseException.class, () -> {
-            serverFacade.createGame("invalidAuthToken", "Invalid Game");
+            serverFacade.createGame(authToken, null);
         });
     }
 
     // Positive test for joinGame method
     @Test
     public void testJoinGame() throws IOException, ResponseException {
-        serverFacade.joinGame("validAuthToken", 1234, "white");
-        // If no exception is thrown, joining game was successful
+        String authToken = serverFacade.login("testuser", "testpassword");
+        Assertions.assertDoesNotThrow(() -> {
+            serverFacade.joinGame(authToken, 5, null);
+        });
     }
 
     // Negative test for joinGame method
     @Test
-    public void testJoinGameFailure() {
+    public void testJoinGameFailure() throws IOException, ResponseException {
+        String authToken = serverFacade.login("testuser", "testpassword");
         Assertions.assertThrows(ResponseException.class, () -> {
-            serverFacade.joinGame("invalidAuthToken", 5678, "black");
+            serverFacade.joinGame(authToken, 5, "WHITE");
         });
     }
 
     // Positive test for observeGame method
     @Test
     public void testObserveGame() throws IOException, ResponseException {
-        serverFacade.observeGame("validAuthToken", 1234);
-        // If no exception is thrown, observing game was successful
+        String authToken = serverFacade.login("testuser", "testpassword");
+        Assertions.assertDoesNotThrow(() -> {
+            serverFacade.observeGame(authToken, 5);
+        });
     }
 
     // Negative test for observeGame method
