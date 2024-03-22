@@ -10,29 +10,34 @@ import static ui.EscapeSequences.*;
 
 public class Client {
     private ChessBoard chessBoard;
-    private ServerFacade server;
+    private ServerFacade serverFacade;
     private final String serverUrl;
     private String authToken;
     private State state = State.LOGGED_OUT;
 
     public Client(String serverUrl) {
         this.chessBoard = new ChessBoard();
-        this.server = new ServerFacade(serverUrl);
+        this.serverFacade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
 
     public static void main(String[] args) {
         var serverUrl = "http://localhost:8080";
+        String portNumber = "8080";
         if (args.length == 1) {
             serverUrl = args[0];
+        } else if (args.length == 2) {
+            portNumber = args[1];
+            serverUrl = "http://" + args[0] + ":" + portNumber;
         }
 
-        String portNumber = "8080";
         int port = Integer.parseInt(portNumber);
-        new Server().run(port);
+        Server server = new Server();
+        server.run(port);
 
         var client = new Client(serverUrl);
         client.run();
+        server.stop();
     }
 
     public void run() {
@@ -99,13 +104,13 @@ public class Client {
             return "Usage: create <NAME>";
         }
         var name = params[0];
-        server.createGame(authToken, name);
+        serverFacade.createGame(authToken, name);
         return "Created game " + name;
     }
 
     public String list() throws ResponseException, IOException {
         StringBuilder gameInfo = new StringBuilder();
-        var games = server.listGames(authToken);
+        var games = serverFacade.listGames(authToken);
         int numGames = games.games().size();
         int count = 0;
         for (var game : games.games()) {
@@ -125,7 +130,7 @@ public class Client {
         }
         var id = params[0];
         var color = (params.length > 1) ? params[1] : null;
-        server.joinGame(authToken, Integer.parseInt(id), color);
+        serverFacade.joinGame(authToken, Integer.parseInt(id), color);
         chessBoard.drawChessBoard();
         if(color == null) {
             return "Joined game " + id + " as an observer";
@@ -138,7 +143,7 @@ public class Client {
             return "Usage: observe <ID>";
         }
         var id = params[0];
-        server.observeGame(authToken, Integer.parseInt(id));
+        serverFacade.observeGame(authToken, Integer.parseInt(id));
         return "Joined game " + id + " as an observer";
     }
 
@@ -149,14 +154,14 @@ public class Client {
         var username = params[0];
         var password = params[1];
         var email = params[2];
-        authToken = server.register(username, password, email);
+        authToken = serverFacade.register(username, password, email);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
     }
 
     public String logout() throws ResponseException, IOException {
         state = State.LOGGED_OUT;
-        server.logout(authToken);
+        serverFacade.logout(authToken);
         return "Logged out";
     }
 
@@ -166,7 +171,7 @@ public class Client {
         }
         var username = params[0];
         var password = params[1];
-        authToken = server.login(username, password);
+        authToken = serverFacade.login(username, password);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
     }

@@ -66,19 +66,4 @@ public class ServerFacade {
         ListGameResponse listGameResponse = new Gson().fromJson(responseBody, ListGameResponse.class);
         return listGameResponse;
     }
-
-    public static void main(String[] args) {
-        String portNumber = "8080";
-        int port = Integer.parseInt(portNumber);
-        new Server().run(port);
-        ServerFacade serverFacade = new ServerFacade("http://localhost:8080");
-        try {
-            System.out.println(serverFacade.register("user1", "password1", "email1"));
-            String authToken = serverFacade.login("user", "password");
-            System.out.println(authToken);
-        } catch (IOException | ResponseException e) {
-            var msg = e.getMessage();
-            System.out.print(msg);
-        }
-    }
 }
