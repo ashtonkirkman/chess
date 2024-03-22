@@ -120,25 +120,25 @@ public class ServerFacadeTests {
 
     // Negative test for observeGame method
     @Test
-    public void testObserveGameFailure() {
+    public void testObserveGameFailure() throws IOException, ResponseException{
+        String authToken = serverFacade.login("testuser", "testpassword");
         Assertions.assertThrows(ResponseException.class, () -> {
-            serverFacade.observeGame("invalidAuthToken", 5678);
+            serverFacade.observeGame(authToken, 1111);
         });
     }
 
-    // Positive test for listGames method
     @Test
     public void testListGames() throws IOException, ResponseException {
-        ListGameResponse gameResponse = serverFacade.listGames("validAuthToken");
-        Assertions.assertNotNull(gameResponse); // Check if response is not null
-        // Additional assertions can be made based on the response data
+        String authToken = serverFacade.login("testuser", "testpassword");
+        ListGameResponse gameResponse = serverFacade.listGames(authToken);
+        Assertions.assertNotNull(gameResponse);
     }
 
     // Negative test for listGames method
     @Test
-    public void testListGamesFailure() {
+    public void testListGamesFailure() throws IOException, ResponseException {
         Assertions.assertThrows(ResponseException.class, () -> {
-            serverFacade.listGames("invalidAuthToken");
+            serverFacade.listGames("invalid auth token");
         });
     }
 
