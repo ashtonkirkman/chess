@@ -1,7 +1,6 @@
 package service;
 
 import dataAccess.DataAccessException;
-
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
 import exception.BadRequestException;
@@ -10,9 +9,7 @@ import exception.UsernameExistsException;
 import model.AuthData;
 import model.GameData;
 import model.ListGameRequest;
-
 import dataAccess.AuthDAO;
-
 import java.util.List;
 
 public class JoinService {

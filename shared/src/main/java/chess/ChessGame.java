@@ -50,18 +50,8 @@ public class ChessGame {
 
     public static void main(String[] args) {
 
-        String filename = "shared/src/main/java/chess/gameMoves.txt";
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String gameMoves;
-            while ((gameMoves = reader.readLine()) != null) {
-                stringBuilder.append(gameMoves);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ChessGame game = new ChessGame();
+        System.out.println(game.board);
     }
 
     /**

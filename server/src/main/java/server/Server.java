@@ -11,9 +11,9 @@ import java.util.Map;
 
 public class Server {
 
-    private UserDAO userDAO;
-    private AuthDAO authDAO;
-    private GameDAO gameDAO;
+    public UserDAO userDAO;
+    public AuthDAO authDAO;
+    public GameDAO gameDAO;
     private LoginService loginService;
     private RegistrationService registrationService;
     private JoinService joinGameService;

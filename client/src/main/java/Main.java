@@ -13,6 +13,7 @@ public class Main {
             serverUrl = "http://" + args[0] + ":" + portNumber;
         }
 
-        Client.start(serverUrl, portNumber);
+        var client = new Client(serverUrl);
+        client.start(serverUrl, portNumber);
     }
 }

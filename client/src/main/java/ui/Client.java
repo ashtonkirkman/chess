@@ -1,32 +1,37 @@
 package ui;
 
 import exception.ResponseException;
+import model.GameData;
 import server.Server;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
+import chess.*;
+import dataAccess.*;
 
 import static java.util.Objects.isNull;
 import static ui.EscapeSequences.*;
 
 public class Client {
-    private ChessBoard chessBoard;
+    private DrawChessBoard chessBoard;
     private ServerFacade serverFacade;
     private final String serverUrl;
     private String authToken;
     private State state = State.LOGGED_OUT;
+    private Server server = new Server();
+    private int gameID;
+    private ChessGame game;
 
     public Client(String serverUrl) {
-        this.chessBoard = new ChessBoard();
+        this.chessBoard = new DrawChessBoard();
         this.serverFacade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
     }
 
-    public static void start(String serverUrl, String portNumber) {
+    public void start(String serverUrl, String portNumber) {
 
         int port = Integer.parseInt(portNumber);
-        Server server = new Server();
         server.run(port);
 
         var client = new Client(serverUrl);
@@ -38,7 +43,7 @@ public class Client {
         System.out.println("Welcome to 240 chess. Type Help to get started.");
         Scanner scanner = new Scanner(System.in);
         String line = "";
-        while (!line.equals("quit")) {
+        while (!line.equals("quit") || state == State.PLAYING) {
             printPrompt();
             line = scanner.nextLine();
 
@@ -56,8 +61,10 @@ public class Client {
     private void printPrompt() {
         if (state == State.LOGGED_IN) {
             System.out.print("\n" + "[LOGGED_IN] >>> ");
-        } else {
+        } else if (state == State.LOGGED_OUT){
             System.out.print("\n" + "[LOGGED_OUT] >>> ");
+        } else {
+            System.out.print("\n" + "[PLAYING] >>> ");
         }
     }
 
@@ -77,7 +84,7 @@ public class Client {
                     default -> "Unknown command: " + cmd;
                 };
             }
-            else {
+            else if (state == State.LOGGED_IN){
                 return switch(cmd) {
                     case "quit" -> "Goodbye!";
                     case "create" -> create(params);
@@ -86,6 +93,17 @@ public class Client {
                     case "observe" -> observe(params);
                     case "logout" -> logout();
                     case "help" -> help();
+                    default -> "Unknown command: " + cmd;
+                };
+            }
+            else {
+                return switch(cmd) {
+                    case "leave" -> leave();
+                    case "help" -> help();
+//                    case "redraw" -> redraw();
+                    case "move" -> move(params);
+//                    case "resign" -> resign();
+//                    case "highlight" -> highlight();
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -133,20 +151,32 @@ public class Client {
         var id = params[0];
         var color = (params.length > 1) ? params[1] : null;
         serverFacade.joinGame(authToken, Integer.parseInt(id), color);
-        chessBoard.drawChessBoard();
+        if (color == null || color.equalsIgnoreCase("white")) {
+//            DrawChessBoard.drawChessBoard("white");
+        }
+        else {
+//            DrawChessBoard.drawChessBoard("black");
+        }
+        gameID = Integer.parseInt(id);
+        state = State.PLAYING;
         if(color == null) {
             return "Joined game " + id + " as an observer";
         }
         return "Joined game " + id + " as " + color;
     }
 
-    public String observe(String... params) throws ResponseException, IOException {
+    public String observe(String... params) throws ResponseException, IOException, DataAccessException {
         if (params.length != 1) {
             return "Usage: observe <ID>";
         }
         var id = params[0];
         serverFacade.observeGame(authToken, Integer.parseInt(id));
-        chessBoard.drawChessBoard();
+        gameID = Integer.parseInt(id);
+        var gameData = server.gameDAO.getGame(gameID);
+        game = gameData.game();
+        DrawChessBoard.drawChessBoard("white");
+        state = State.PLAYING;
+        gameID = Integer.parseInt(id);
         return "Joined game " + id + " as an observer";
     }
 
@@ -177,6 +207,38 @@ public class Client {
         authToken = serverFacade.login(username, password);
         state = State.LOGGED_IN;
         return "Logged in as " + username;
+    }
+
+    public String leave() {
+        state = State.LOGGED_IN;
+        return "You have left the game.";
+    }
+
+    public String move(String... params) throws DataAccessException, InvalidMoveException {
+        if (params.length < 2) {
+            return "Usage: move <FROM> <TO> <PROMOTION|<empty>>";
+        }
+        var from = params[0];
+        var fromPosition = parsePosition(from);
+        var to = params[1];
+        var toPosition = parsePosition(to);
+        var promotion = (params.length > 2) ? params[2] : null;
+        var gameData = server.gameDAO.getGame(gameID);
+        game = gameData.game();
+        game.makeMove(new ChessMove(fromPosition, toPosition, null));
+        System.out.println(game);
+        gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+        server.gameDAO.updateGame(gameData);
+        return "Moved from " + from + " to " + to + " with promotion " + promotion;
+    }
+
+    public ChessPosition parsePosition(String position) {
+        if (position.length() != 2) {
+            throw new IllegalArgumentException("Invalid position: " + position);
+        }
+        var column = position.charAt(0) - 'a' + 1;
+        var row = position.charAt(1) - '1' + 1;
+        return new ChessPosition(row, column);
     }
 
     public String help() {
