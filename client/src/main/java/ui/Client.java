@@ -22,6 +22,7 @@ public class Client {
     private Server server = new Server();
     private int gameID;
     private ChessGame game;
+    private String perspective;
 
     public Client(String serverUrl) {
         this.chessBoard = new DrawChessBoard();
@@ -63,8 +64,10 @@ public class Client {
             System.out.print("\n" + "[LOGGED_IN] >>> ");
         } else if (state == State.LOGGED_OUT){
             System.out.print("\n" + "[LOGGED_OUT] >>> ");
-        } else {
+        } else if (state == State.PLAYING){
             System.out.print("\n" + "[PLAYING] >>> ");
+        } else {
+            System.out.print("\n" + "[OBSERVING] >>> ");
         }
     }
 
@@ -96,7 +99,7 @@ public class Client {
                     default -> "Unknown command: " + cmd;
                 };
             }
-            else {
+            else if (state == State.PLAYING){
                 return switch(cmd) {
                     case "leave" -> leave();
                     case "help" -> help();
@@ -104,6 +107,14 @@ public class Client {
                     case "move" -> move(params);
 //                    case "resign" -> resign();
 //                    case "highlight" -> highlight();
+                    default -> "Unknown command: " + cmd;
+                };
+            }
+            else {
+                return switch(cmd) {
+                    case "leave" -> leave();
+                    case "help" -> help();
+                    case "move" -> "As an observer, you cannot make a move.";
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -144,24 +155,29 @@ public class Client {
         return gameInfo.toString();
     }
 
-    public String join(String... params) throws ResponseException, IOException {
+    public String join(String... params) throws ResponseException, IOException, DataAccessException {
         if (params.length < 1) {
             return "Usage: join <ID> [WHITE|BLACK|<empty>]";
         }
         var id = params[0];
         var color = (params.length > 1) ? params[1] : null;
         serverFacade.joinGame(authToken, Integer.parseInt(id), color);
+        gameID = Integer.parseInt(id);
+        perspective = color;
+        var gameData = server.gameDAO.getGame(gameID);
+        game = gameData.game();
         if (color == null || color.equalsIgnoreCase("white")) {
-//            DrawChessBoard.drawChessBoard("white");
+            DrawChessBoard.drawChessBoard(game.getBoard(), "white");
         }
         else {
-//            DrawChessBoard.drawChessBoard("black");
+            DrawChessBoard.drawChessBoard(game.getBoard(), "black");
         }
         gameID = Integer.parseInt(id);
-        state = State.PLAYING;
         if(color == null) {
+            state = State.OBSERVING;
             return "Joined game " + id + " as an observer";
         }
+        state = State.PLAYING;
         return "Joined game " + id + " as " + color;
     }
 
@@ -174,8 +190,8 @@ public class Client {
         gameID = Integer.parseInt(id);
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
-        DrawChessBoard.drawChessBoard("white");
-        state = State.PLAYING;
+        DrawChessBoard.drawChessBoard(game.getBoard(), "white");
+        state = State.OBSERVING;
         gameID = Integer.parseInt(id);
         return "Joined game " + id + " as an observer";
     }
@@ -226,7 +242,7 @@ public class Client {
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
         game.makeMove(new ChessMove(fromPosition, toPosition, null));
-        System.out.println(game);
+        DrawChessBoard.drawChessBoard(game.getBoard(), perspective);
         gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
         server.gameDAO.updateGame(gameData);
         return "Moved from " + from + " to " + to + " with promotion " + promotion;
