@@ -20,7 +20,7 @@ public class DrawChessBoard {
     public static void main(String[] args) {
         ChessGame game = new ChessGame();
         ChessPosition highlightedPiece = new ChessPosition(2, 1);
-        drawChessBoard(game, "black", highlightedPiece);
+        drawChessBoard(game, "black", null);
     }
 
     public static void drawChessBoard(ChessGame game, String perspective, ChessPosition highlightedPiece) {
@@ -95,7 +95,7 @@ public class DrawChessBoard {
         Collection<ChessPosition> squaresToHighlight = new HashSet<>();
         boolean shouldBeHighlighted = false;
 
-        if (game.getBoard().getPiece(highlightedPiece) != null) {
+        if (highlightedPiece != null) {
             validMoves = game.validMoves(highlightedPiece);
             for (var move : validMoves) {
                 squaresToHighlight.add(move.getEndPosition());
