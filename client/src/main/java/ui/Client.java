@@ -106,7 +106,7 @@ public class Client {
 //                    case "redraw" -> redraw();
                     case "move" -> move(params);
 //                    case "resign" -> resign();
-//                    case "highlight" -> highlight();
+                    case "highlight" -> highlight(params);
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -167,10 +167,10 @@ public class Client {
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
         if (color == null || color.equalsIgnoreCase("white")) {
-            DrawChessBoard.drawChessBoard(game.getBoard(), "white");
+            DrawChessBoard.drawChessBoard(game, "white", null);
         }
         else {
-            DrawChessBoard.drawChessBoard(game.getBoard(), "black");
+            DrawChessBoard.drawChessBoard(game, "black", null);
         }
         gameID = Integer.parseInt(id);
         if(color == null) {
@@ -190,7 +190,7 @@ public class Client {
         gameID = Integer.parseInt(id);
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
-        DrawChessBoard.drawChessBoard(game.getBoard(), "white");
+        DrawChessBoard.drawChessBoard(game, "white", null);
         state = State.OBSERVING;
         gameID = Integer.parseInt(id);
         return "Joined game " + id + " as an observer";
@@ -242,10 +242,22 @@ public class Client {
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
         game.makeMove(new ChessMove(fromPosition, toPosition, null));
-        DrawChessBoard.drawChessBoard(game.getBoard(), perspective);
+        DrawChessBoard.drawChessBoard(game, perspective, null);
         gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
         server.gameDAO.updateGame(gameData);
         return "Moved from " + from + " to " + to + " with promotion " + promotion;
+    }
+
+    public String highlight(String ... params) throws DataAccessException {
+        if (params.length < 1) {
+            return "Usage: highlight <POSITION>";
+        }
+        var position = params[0];
+        var chessPosition = parsePosition(position);
+        var gameData = server.gameDAO.getGame(gameID);
+        game = gameData.game();
+        DrawChessBoard.drawChessBoard(game, perspective, chessPosition);
+        return "Highlighted position " + position;
     }
 
     public ChessPosition parsePosition(String position) {

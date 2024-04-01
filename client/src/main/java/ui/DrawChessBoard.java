@@ -2,6 +2,9 @@ package ui;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import chess.ChessBoard;
 import chess.*;
@@ -16,64 +19,25 @@ public class DrawChessBoard {
 
     public static void main(String[] args) {
         ChessGame game = new ChessGame();
-        drawChessBoard(game.getBoard(), "black");
+        ChessPosition highlightedPiece = new ChessPosition(2, 1);
+        drawChessBoard(game, "black", highlightedPiece);
     }
 
-    public static void drawChessBoard(ChessBoard board, String perspective) {
+    public static void drawChessBoard(ChessGame game, String perspective, ChessPosition highlightedPiece) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
         if (perspective.equalsIgnoreCase("white")) {
             drawWhiteHeaders(out);
-            drawBoard(board, out, "white");
+            drawBoard(game, out, "white", highlightedPiece);
             drawWhiteHeaders(out);
         } else {
             drawBlackHeaders(out);
-            drawBoard(board, out, "black");
+            drawBoard(game, out, "black", highlightedPiece);
             drawBlackHeaders(out);
         }
 
         out.print(RESET_BG_COLOR);
         out.print(RESET_TEXT);
-    }
-
-    public static void updateChessBoard(ChessBoard board, String perspective) {
-        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        for (int row = 1; row <= BOARD_SIZE_IN_SQUARES; row++) {
-            for (int col = 1; col <= BOARD_SIZE_IN_SQUARES; col++) {
-                ChessPiece piece;
-                if (perspective.equalsIgnoreCase("white")) {
-                    piece = board.getPiece(new ChessPosition(9-row, col));
-                }
-                else {
-                    piece = board.getPiece(new ChessPosition(row, 9-col));
-                }
-                String pieceToPrint;
-                if (piece == null) {
-                    pieceToPrint = EMPTY;
-                }
-                else {
-                    pieceToPrint = convertPieceToString(piece);
-                }
-                if (row % 2 ==0) {
-                    if (col % 2 == 0) {
-                        printLightSquare(out, pieceToPrint);
-                    }
-                    else {
-                        printDarkSquare(out, pieceToPrint);
-                    }
-                }
-                else {
-                    if (col % 2 == 0) {
-                        printDarkSquare(out, pieceToPrint);
-                    }
-                    else {
-                        printLightSquare(out, pieceToPrint);
-                    }
-                }
-            }
-            setBlack(out);
-            System.out.println();
-        }
     }
 
     private static void drawWhiteHeaders(PrintStream out) {
@@ -113,11 +77,11 @@ public class DrawChessBoard {
         setBlack(out);
     }
 
-    private static void drawBoard(ChessBoard board, PrintStream out, String perspective) {
+    private static void drawBoard(ChessGame game, PrintStream out, String perspective, ChessPosition highlightedPiece) {
 
         for (int boardRow = 1; boardRow <= BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
-            drawRowOfSquares(out, board, boardRow, perspective.equalsIgnoreCase("black") ? "black" : "white");
+            drawRowOfSquares(out, game, boardRow, perspective.equalsIgnoreCase("black") ? "black" : "white", highlightedPiece);
 
             if (boardRow <= BOARD_SIZE_IN_SQUARES - 1) {
                 setBlack(out);
@@ -125,17 +89,38 @@ public class DrawChessBoard {
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, String perspective) {
+    private static void drawRowOfSquares(PrintStream out, ChessGame game, int boardRow, String perspective, ChessPosition highlightedPiece) {
 
+        Collection<ChessMove> validMoves;
+        Collection<ChessPosition> squaresToHighlight = new HashSet<>();
+        boolean shouldBeHighlighted = false;
+
+        if (game.getBoard().getPiece(highlightedPiece) != null) {
+            validMoves = game.validMoves(highlightedPiece);
+            for (var move : validMoves) {
+                squaresToHighlight.add(move.getEndPosition());
+            }
+            squaresToHighlight.add(highlightedPiece);
+        }
         drawHeader(out, THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+THIN_SPACE);
         boolean isWhitePerspective = perspective.equalsIgnoreCase("white");
         for (int boardCol = 1; boardCol <= BOARD_SIZE_IN_SQUARES; ++boardCol) {
             ChessPiece piece;
+            ChessPosition currentPosition = isWhitePerspective ? new ChessPosition(9 - boardRow, boardCol) : new ChessPosition(boardRow, 9-boardCol);
+            for(var square : squaresToHighlight) {
+                if (currentPosition.equals(square)) {
+                    shouldBeHighlighted = true;
+                    break;
+                }
+                else {
+                    shouldBeHighlighted = false;
+                }
+            }
             if (isWhitePerspective) {
-                piece = board.getPiece(new ChessPosition(9-boardRow, boardCol));
+                piece = game.getBoard().getPiece(new ChessPosition(9-boardRow, boardCol));
             }
             else {
-                piece = board.getPiece(new ChessPosition(boardRow, 9-boardCol));
+                piece = game.getBoard().getPiece(new ChessPosition(boardRow, 9-boardCol));
             }
             String pieceOutput;
             if (piece == null) {
@@ -146,18 +131,18 @@ public class DrawChessBoard {
             }
             if (boardRow % 2 ==0) {
                 if (boardCol % 2 == 0) {
-                    printLightSquare(out, pieceOutput);
+                    printLightSquare(out, pieceOutput, shouldBeHighlighted);
                 }
                 else {
-                    printDarkSquare(out, pieceOutput);
+                    printDarkSquare(out, pieceOutput, shouldBeHighlighted);
                 }
             }
             else {
                 if (boardCol % 2 == 0) {
-                    printDarkSquare(out, pieceOutput);
+                    printDarkSquare(out, pieceOutput, shouldBeHighlighted);
                 }
                 else {
-                    printLightSquare(out, pieceOutput);
+                    printLightSquare(out, pieceOutput, shouldBeHighlighted);
                 }
             }
 
@@ -165,34 +150,6 @@ public class DrawChessBoard {
         }
         drawHeader(out, THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+THIN_SPACE);
         out.println();
-    }
-
-    private static String selectPiece(int boardRow, int boardCol, String perspective) {
-
-        if (boardRow == 0) {
-            return switch (boardCol) {
-                case 0, 7 -> WHITE_ROOK;
-                case 1, 6 -> WHITE_KNIGHT;
-                case 2, 5 -> WHITE_BISHOP;
-                case 3 -> perspective.equals("black") ? WHITE_KING : WHITE_QUEEN;
-                case 4 -> perspective.equals("black") ? WHITE_QUEEN: WHITE_KING;
-                default -> EMPTY;
-            };
-        } else if (boardRow == 1) {
-            return WHITE_PAWN;
-        } else if (boardRow == 6) {
-            return BLACK_PAWN;
-        } else if (boardRow == 7) {
-            return switch (boardCol) {
-                case 0, 7 -> BLACK_ROOK;
-                case 1, 6 -> BLACK_KNIGHT;
-                case 2, 5 -> BLACK_BISHOP;
-                case 3 -> perspective.equals("black") ? BLACK_KING: BLACK_QUEEN;
-                case 4 -> perspective.equals("black") ? BLACK_QUEEN: BLACK_KING;
-                default -> EMPTY;
-            };
-        }
-        return EMPTY;
     }
 
     private static String convertPieceToString(ChessPiece piece) {
@@ -217,8 +174,12 @@ public class DrawChessBoard {
         out.print(SET_TEXT_COLOR_BLACK);
     }
 
-    private static void printLightSquare(PrintStream out, String piece) {
-        out.print(SET_BG_COLOR_LIGHT_SQUARE);
+    private static void printLightSquare(PrintStream out, String piece, boolean shouldBeHighlighted) {
+        if (shouldBeHighlighted) {
+            out.print(SET_BG_COLOR_LIGHT_SQUARE_HIGHLIGHT);
+        } else {
+            out.print(SET_BG_COLOR_LIGHT_SQUARE);
+        }
         out.print(SET_TEXT_COLOR_BLACK);
 
         out.print(piece);
@@ -226,8 +187,12 @@ public class DrawChessBoard {
         setWhite(out);
     }
 
-    private static void printDarkSquare(PrintStream out, String piece) {
-        out.print(SET_BG_COLOR_DARK_SQUARE);
+    private static void printDarkSquare(PrintStream out, String piece, boolean shouldBeHighlighted) {
+        if (shouldBeHighlighted) {
+            out.print(SET_BG_COLOR_DARK_SQUARE_HIGHLIGHT);
+        } else {
+            out.print(SET_BG_COLOR_DARK_SQUARE);
+        }
         out.print(SET_TEXT_COLOR_BLACK);
 
         out.print(piece);
