@@ -115,6 +115,7 @@ public class Client {
                     case "leave" -> leave();
                     case "help" -> help();
                     case "move" -> "As an observer, you cannot make a move.";
+                    case "highlight" -> highlight(params);
                     default -> "Unknown command: " + cmd;
                 };
             }
