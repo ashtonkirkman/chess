@@ -80,4 +80,20 @@ public class JoinService {
             gameDAO.updateGame(new GameData(game.gameID(), game.whiteUsername(), username, game.gameName(), game.game()));
         }
     }
+
+    public GameData getGame(int gameID) throws BadRequestException {
+        try {
+            return gameDAO.getGame(gameID);
+        } catch (DataAccessException e) {
+            throw new BadRequestException("Error: Invalid game ID");
+        }
+    }
+
+    public String getUsername(String authToken) throws UnauthorizedException {
+        try {
+            return authDAO.getUsername(authToken);
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException("Error: Unauthorized");
+        }
+    }
 }

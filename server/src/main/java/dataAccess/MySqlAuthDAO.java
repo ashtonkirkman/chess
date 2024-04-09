@@ -13,8 +13,12 @@ import static java.sql.Types.NULL;
 
 public class MySqlAuthDAO implements AuthDAO {
 
-    public MySqlAuthDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlAuthDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public String createAuth(String username) throws DataAccessException {
@@ -62,6 +66,23 @@ public class MySqlAuthDAO implements AuthDAO {
         } catch (SQLException e) {
             throw new DataAccessException("Error: Failed to check if auth token exists");
         }
+    }
+
+    public String getUsername(String authToken) throws DataAccessException {
+        var statement = "SELECT username FROM auth_data WHERE auth_token = ?";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getString("username");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Error: Failed to retrieve username");
+        }
+        throw new DataAccessException("Error: Username not found");
     }
 
     public void clear() throws DataAccessException {

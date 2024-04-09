@@ -13,8 +13,12 @@ import static java.sql.Types.NULL;
 
 public class MySqlGameDAO implements GameDAO {
 
-    public MySqlGameDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlGameDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public int createGame(String gameName) throws DataAccessException {

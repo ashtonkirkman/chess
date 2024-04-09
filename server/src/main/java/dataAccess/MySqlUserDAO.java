@@ -11,8 +11,12 @@ public class MySqlUserDAO implements UserDAO {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public MySqlUserDAO() throws DataAccessException {
-        configureDatabase();
+    public MySqlUserDAO() {
+        try {
+            configureDatabase();
+        } catch (DataAccessException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     public void createUser(UserData user) throws DataAccessException {

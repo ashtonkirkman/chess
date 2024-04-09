@@ -13,7 +13,7 @@ import dataAccess.*;
 
 import static java.util.Objects.isNull;
 
-public class Client implements ServerMessageObserver {
+public class Client {
     private DrawChessBoard chessBoard;
     private ServerFacade serverFacade;
     private final String serverUrl;

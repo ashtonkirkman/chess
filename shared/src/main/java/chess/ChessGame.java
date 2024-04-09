@@ -215,10 +215,10 @@ public class ChessGame {
 
         Collection<ChessMove> validMoves = this.validMoves(startPosition);
         if (currentPiece == null) {
-            throw new InvalidMoveException("Selected Piece is null");
+            throw new InvalidMoveException("You must select a piece");
         }
         if (currentPiece.getTeamColor() != teamTurn) {
-            throw new InvalidMoveException("Wrong team's turn");
+            throw new InvalidMoveException("It's not your turn");
         }
         if (!validMoves.contains(move)) {
             throw new InvalidMoveException("Invalid move: " + move);
