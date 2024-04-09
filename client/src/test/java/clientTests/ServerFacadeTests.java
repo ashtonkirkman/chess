@@ -1,11 +1,10 @@
 package clientTests;
 
-import dataAccess.DataAccessException;
 import exception.ResponseException;
 import model.ListGameResponse;
 import org.junit.jupiter.api.*;
 import server.Server;
-import ui.ServerFacade;
+import client.ui.ServerFacade;
 
 import java.io.IOException;
 

@@ -1,15 +1,11 @@
-package ui;
+package client.ui;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import chess.ChessBoard;
-import chess.*;
 
-import static ui.EscapeSequences.*;
+import chess.*;
 
 public class DrawChessBoard {
 
@@ -36,20 +32,20 @@ public class DrawChessBoard {
             drawBlackHeaders(out);
         }
 
-        out.print(RESET_BG_COLOR);
-        out.print(RESET_TEXT);
+        out.print(EscapeSequences.RESET_BG_COLOR);
+        out.print(EscapeSequences.RESET_TEXT);
     }
 
     private static void drawWhiteHeaders(PrintStream out) {
 
         setBlack(out);
 
-        drawHeader(out, SPACE);
+        drawHeader(out, EscapeSequences.SPACE);
         String[] headers = { "a", "b", "c", "d", "e", "f", "g", "h"};
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, THIN_SPACE+headers[boardCol]+THIN_SPACE);
+            drawHeader(out, EscapeSequences.THIN_SPACE+headers[boardCol]+ EscapeSequences.THIN_SPACE);
         }
-        drawHeader(out, SPACE);
+        drawHeader(out, EscapeSequences.SPACE);
 
         out.println();
     }
@@ -58,21 +54,21 @@ public class DrawChessBoard {
 
         setBlack(out);
 
-        drawHeader(out, SPACE);
+        drawHeader(out, EscapeSequences.SPACE);
         String[] headers = { "h", "g", "f", "e", "d", "c", "b", "a"};
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, THIN_SPACE+headers[boardCol]+THIN_SPACE);
+            drawHeader(out, EscapeSequences.THIN_SPACE+headers[boardCol]+ EscapeSequences.THIN_SPACE);
         }
-        drawHeader(out, SPACE);
+        drawHeader(out, EscapeSequences.SPACE);
 
         out.println();
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
 
-        out.print(TWO_THIN_SPACES + headerText + TWO_THIN_SPACES);
+        out.print(EscapeSequences.TWO_THIN_SPACES + headerText + EscapeSequences.TWO_THIN_SPACES);
 
         setBlack(out);
     }
@@ -102,7 +98,7 @@ public class DrawChessBoard {
             }
             squaresToHighlight.add(highlightedPiece);
         }
-        drawHeader(out, THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+THIN_SPACE);
+        drawHeader(out, EscapeSequences.THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+ EscapeSequences.THIN_SPACE);
         boolean isWhitePerspective = perspective.equalsIgnoreCase("white");
         for (int boardCol = 1; boardCol <= BOARD_SIZE_IN_SQUARES; ++boardCol) {
             ChessPiece piece;
@@ -124,7 +120,7 @@ public class DrawChessBoard {
             }
             String pieceOutput;
             if (piece == null) {
-                pieceOutput = EMPTY;
+                pieceOutput = EscapeSequences.EMPTY;
             }
             else {
                 pieceOutput = convertPieceToString(piece);
@@ -148,39 +144,39 @@ public class DrawChessBoard {
 
             setBlack(out);
         }
-        drawHeader(out, THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+THIN_SPACE);
+        drawHeader(out, EscapeSequences.THIN_SPACE+(perspective.equalsIgnoreCase("white") ? 9-boardRow : boardRow)+ EscapeSequences.THIN_SPACE);
         out.println();
     }
 
     private static String convertPieceToString(ChessPiece piece) {
         var pieceType = piece.getPieceType();
         return switch (pieceType) {
-            case ChessPiece.PieceType.ROOK -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_ROOK : WHITE_ROOK;
-            case ChessPiece.PieceType.KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_KNIGHT : WHITE_KNIGHT;
-            case ChessPiece.PieceType.BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_BISHOP : WHITE_BISHOP;
-            case ChessPiece.PieceType.QUEEN -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_QUEEN : WHITE_QUEEN;
-            case ChessPiece.PieceType.KING -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_KING : WHITE_KING;
-            case ChessPiece.PieceType.PAWN -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? BLACK_PAWN : WHITE_PAWN;
+            case ChessPiece.PieceType.ROOK -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_ROOK : EscapeSequences.WHITE_ROOK;
+            case ChessPiece.PieceType.KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_KNIGHT : EscapeSequences.WHITE_KNIGHT;
+            case ChessPiece.PieceType.BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_BISHOP : EscapeSequences.WHITE_BISHOP;
+            case ChessPiece.PieceType.QUEEN -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_QUEEN : EscapeSequences.WHITE_QUEEN;
+            case ChessPiece.PieceType.KING -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_KING : EscapeSequences.WHITE_KING;
+            case ChessPiece.PieceType.PAWN -> piece.getTeamColor() == ChessGame.TeamColor.BLACK ? EscapeSequences.BLACK_PAWN : EscapeSequences.WHITE_PAWN;
         };
     }
 
     private static void setWhite(PrintStream out) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_WHITE);
+        out.print(EscapeSequences.SET_BG_COLOR_WHITE);
+        out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
     }
 
     private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_BG_COLOR_BLACK);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
     }
 
     private static void printLightSquare(PrintStream out, String piece, boolean shouldBeHighlighted) {
         if (shouldBeHighlighted) {
-            out.print(SET_BG_COLOR_LIGHT_SQUARE_HIGHLIGHT);
+            out.print(EscapeSequences.SET_BG_COLOR_LIGHT_SQUARE_HIGHLIGHT);
         } else {
-            out.print(SET_BG_COLOR_LIGHT_SQUARE);
+            out.print(EscapeSequences.SET_BG_COLOR_LIGHT_SQUARE);
         }
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
 
         out.print(piece);
 
@@ -189,11 +185,11 @@ public class DrawChessBoard {
 
     private static void printDarkSquare(PrintStream out, String piece, boolean shouldBeHighlighted) {
         if (shouldBeHighlighted) {
-            out.print(SET_BG_COLOR_DARK_SQUARE_HIGHLIGHT);
+            out.print(EscapeSequences.SET_BG_COLOR_DARK_SQUARE_HIGHLIGHT);
         } else {
-            out.print(SET_BG_COLOR_DARK_SQUARE);
+            out.print(EscapeSequences.SET_BG_COLOR_DARK_SQUARE);
         }
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(EscapeSequences.SET_TEXT_COLOR_BLACK);
 
         out.print(piece);
 

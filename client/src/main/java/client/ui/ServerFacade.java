@@ -1,8 +1,7 @@
-package ui;
+package client.ui;
 import exception.ResponseException;
 import model.*;
 import com.google.gson.Gson;
-import server.Server;
 
 import java.io.IOException;
 
