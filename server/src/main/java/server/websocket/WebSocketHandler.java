@@ -31,7 +31,7 @@ public class WebSocketHandler {
             case JOIN_PLAYER -> join(session, msg);
             case JOIN_OBSERVER -> observe(session, msg);
             case MAKE_MOVE -> move(msg);
-//            case LEAVE -> leave(session, msg);
+            case LEAVE -> leave(session, msg);
 //            case RESIGN -> resign(session, msg);
         }
     }
@@ -160,6 +160,22 @@ public class WebSocketHandler {
             } catch (IOException e) {
                 throw new ResponseException(500, e.getMessage());
             }
+        }
+    }
+
+    public void leave(Session session, String msg) throws ResponseException {
+        LeaveCommand leaveCommand = new Gson().fromJson(msg, LeaveCommand.class);
+        int gameID = leaveCommand.getGameID();
+        String authToken = leaveCommand.getAuthString();
+        String username = joinService.getUsername(authToken);
+        String message = String.format("%s has left the game", username);
+        NotificationMessage notificationMessage = new NotificationMessage(message);
+        try {
+            connections.removeConnectionToGame(authToken, gameID);
+            connections.removeConnection(session);
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
         }
     }
 }

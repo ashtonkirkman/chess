@@ -35,15 +35,21 @@ public class Client implements ServerMessageObserver {
         this.chessBoard = new DrawChessBoard();
         this.serverFacade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+//        if (ws == null) {
+//            try {
+//                ws = new WebSocketCommunicator(serverUrl, this);
+//            } catch (ResponseException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public void start(String serverUrl, String portNumber) {
 
-        int port = Integer.parseInt(portNumber);
-        server.run(port);
+//        int port = Integer.parseInt(portNumber);
+//        server.run(port);
 
-        var client = new Client(serverUrl);
-        client.run();
+        run();
         server.stop();
     }
 
@@ -236,8 +242,22 @@ public class Client implements ServerMessageObserver {
         return "Logged in as " + username;
     }
 
-    public String leave() {
+    public String leave() throws ResponseException, DataAccessException {
         state = State.LOGGED_IN;
+        GameData gameData = server.gameDAO.getGame(gameID);
+        game = gameData.game();
+        String username = server.authDAO.getUsername(authToken);
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
+            server.gameDAO.updateGame(new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), game));
+            ws.leave(gameID, authToken);
+        }
+        else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
+            server.gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), game));
+            ws.leave(gameID, authToken);
+        }
+        else {
+            ws.leave(gameID, authToken);
+        }
         return "You have left the game.";
     }
 

@@ -21,6 +21,7 @@ public class Server {
     private ClearService clearService;
     private Gson gson = new Gson();
     private WebSocketHandler webSocketHandler;
+    private boolean isRunning = false;
 
     public Server(){
         authDAO = new MySqlAuthDAO();
@@ -34,6 +35,7 @@ public class Server {
     }
 
     public int run(int desiredPort) {
+        isRunning = true;
 
         System.out.println("Initializing HTTP Server on port " + desiredPort);
         Spark.port(desiredPort);
@@ -55,6 +57,7 @@ public class Server {
     }
 
     public void stop() {
+        isRunning = false;
         Spark.stop();
         Spark.awaitStop();
     }
@@ -67,6 +70,10 @@ public class Server {
         errorResponse.put("message", ex.getMessage());
         String json = gson.toJson(errorResponse);
         res.body(json);
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 
     public static void main(String[] args) {

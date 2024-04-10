@@ -72,4 +72,24 @@ public class WebSocketCommunicator extends Endpoint {
         }
     }
 
+    public void leave(int gameID, String authToken) throws ResponseException {
+        LeaveCommand leaveCommand = new LeaveCommand(authToken, gameID);
+        String message = new Gson().toJson(leaveCommand, LeaveCommand.class);
+        try {
+            session.getBasicRemote().sendText(message);
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
+    public void resign(int gameID, String authToken) throws ResponseException {
+        ResignCommand resignCommand = new ResignCommand(authToken, gameID);
+        String message = new Gson().toJson(resignCommand, ResignCommand.class);
+        try {
+            session.getBasicRemote().sendText(message);
+        } catch (IOException ex) {
+            throw new ResponseException(500, ex.getMessage());
+        }
+    }
+
 }
