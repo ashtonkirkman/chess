@@ -32,7 +32,7 @@ public class WebSocketHandler {
             case JOIN_OBSERVER -> observe(session, msg);
             case MAKE_MOVE -> move(msg);
             case LEAVE -> leave(session, msg);
-//            case RESIGN -> resign(session, msg);
+            case RESIGN -> resign(session, msg);
         }
     }
 
@@ -121,10 +121,30 @@ public class WebSocketHandler {
         GameData gameData = joinService.getGame(gameID);
         ChessGame game = gameData.game();
         ChessMove move = command.getMove();
+        ChessGame.TeamColor teamTurn = game.getTeamTurn();
         String username = joinService.getUsername(authToken);
+
+        if (teamTurn == ChessGame.TeamColor.WHITE && !Objects.equals(gameData.whiteUsername(), username)) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Not your turn"));
+                connections.sendLoadGameMessage(gameID, authToken, new LoadGameMessage(game));
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
+        else if (teamTurn == ChessGame.TeamColor.BLACK && !Objects.equals(gameData.blackUsername(), username)) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Not your turn"));
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
 
         try {
             game.makeMove(move);
+            joinService.updateGame(new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game));
         } catch (Exception e) {
             try {
                 connections.sendErrorMessage(authToken, new ErrorMessage("Error: " + e.getMessage()));
@@ -142,6 +162,24 @@ public class WebSocketHandler {
             connections.sendLoadGameMessage(gameID, "all", loadGameMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
+        }
+
+        if(game.isInCheck(ChessGame.TeamColor.WHITE)) {
+            responseMessage = "White is in check!";
+            notificationMessage = new NotificationMessage(responseMessage);
+            try {
+                connections.sendNotificationMessage(gameID, "all", notificationMessage);
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+        } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+            responseMessage = "Black is in check!";
+            notificationMessage = new NotificationMessage(responseMessage);
+            try {
+                connections.sendNotificationMessage(gameID, "all", notificationMessage);
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
         }
 
         if(game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
@@ -169,6 +207,22 @@ public class WebSocketHandler {
         String authToken = leaveCommand.getAuthString();
         String username = joinService.getUsername(authToken);
         String message = String.format("%s has left the game", username);
+        NotificationMessage notificationMessage = new NotificationMessage(message);
+        try {
+            connections.removeConnectionToGame(authToken, gameID);
+            connections.removeConnection(session);
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
+        } catch (IOException e) {
+            throw new ResponseException(500, e.getMessage());
+        }
+    }
+
+    public void resign(Session session, String msg) throws ResponseException {
+        ResignCommand resignCommand = new Gson().fromJson(msg, ResignCommand.class);
+        int gameID = resignCommand.getGameID();
+        String authToken = resignCommand.getAuthString();
+        String username = joinService.getUsername(authToken);
+        String message = String.format("%s has resigned", username);
         NotificationMessage notificationMessage = new NotificationMessage(message);
         try {
             connections.removeConnectionToGame(authToken, gameID);

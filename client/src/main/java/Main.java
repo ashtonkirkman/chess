@@ -1,4 +1,5 @@
 import client.ui.Client;
+import server.Server;
 
 public class Main {
     public static void main(String[] args) {
@@ -12,7 +13,10 @@ public class Main {
             serverUrl = "http://" + args[0] + ":" + portNumber;
         }
 
+//        var server = new Server();
+//        server.run(Integer.parseInt(portNumber));
         var client = new Client(serverUrl);
         client.start(serverUrl, portNumber);
+//        server.stop();
     }
 }

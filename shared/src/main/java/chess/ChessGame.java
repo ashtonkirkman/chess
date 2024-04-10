@@ -197,6 +197,10 @@ public class ChessGame {
         return true;
     }
 
+    public ChessGame.TeamColor getTeamTurn() {
+        return teamTurn;
+    }
+
     /**
      * Makes a move in a chess game
      *

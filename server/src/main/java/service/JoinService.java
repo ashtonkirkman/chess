@@ -96,4 +96,8 @@ public class JoinService {
             throw new UnauthorizedException("Error: Unauthorized");
         }
     }
+
+    public void updateGame(GameData gameData) throws DataAccessException {
+        gameDAO.updateGame(gameData);
+    }
 }

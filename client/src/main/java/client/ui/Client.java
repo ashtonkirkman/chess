@@ -25,7 +25,10 @@ public class Client implements ServerMessageObserver {
     private final String serverUrl;
     private String authToken;
     private State state = State.LOGGED_OUT;
-    private Server server = new Server();
+//    private Server server = new Server();
+    private AuthDAO authDAO = new MySqlAuthDAO();
+    private GameDAO gameDAO = new MySqlGameDAO();
+    private UserDAO userDAO = new MySqlUserDAO();
     private int gameID;
     private ChessGame game;
     private String perspective;
@@ -50,7 +53,7 @@ public class Client implements ServerMessageObserver {
 //        server.run(port);
 
         run();
-        server.stop();
+//        server.stop();
     }
 
     public void run() {
@@ -118,7 +121,7 @@ public class Client implements ServerMessageObserver {
                     case "help" -> help();
 //                    case "redraw" -> redraw();
                     case "move" -> move(params);
-//                    case "resign" -> resign();
+                    case "resign" -> resign();
                     case "highlight" -> highlight(params);
                     default -> "Unknown command: " + cmd;
                 };
@@ -180,7 +183,7 @@ public class Client implements ServerMessageObserver {
         gameID = Integer.parseInt(id);
         perspective = color;
         ChessGame.TeamColor playerColor = (color == null) ? null : (color.equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK);
-        var gameData = server.gameDAO.getGame(gameID);
+        var gameData = gameDAO.getGame(gameID);
         game = gameData.game();
         gameID = Integer.parseInt(id);
         if(color == null) {
@@ -203,7 +206,7 @@ public class Client implements ServerMessageObserver {
         var id = params[0];
         serverFacade.observeGame(authToken, Integer.parseInt(id));
         gameID = Integer.parseInt(id);
-        var gameData = server.gameDAO.getGame(gameID);
+        var gameData = gameDAO.getGame(gameID);
         game = gameData.game();
         DrawChessBoard.drawChessBoard(game, "white", null);
         state = State.OBSERVING;
@@ -244,15 +247,15 @@ public class Client implements ServerMessageObserver {
 
     public String leave() throws ResponseException, DataAccessException {
         state = State.LOGGED_IN;
-        GameData gameData = server.gameDAO.getGame(gameID);
+        GameData gameData = gameDAO.getGame(gameID);
         game = gameData.game();
-        String username = server.authDAO.getUsername(authToken);
+        String username = authDAO.getUsername(authToken);
         if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
-            server.gameDAO.updateGame(new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), game));
+            gameDAO.updateGame(new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), game));
             ws.leave(gameID, authToken);
         }
         else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
-            server.gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), game));
+            gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), game));
             ws.leave(gameID, authToken);
         }
         else {
@@ -270,15 +273,30 @@ public class Client implements ServerMessageObserver {
         var to = params[1];
         var toPosition = parsePosition(to);
         var promotion = (params.length > 2) ? params[2] : null;
-        var gameData = server.gameDAO.getGame(gameID);
+        var gameData = gameDAO.getGame(gameID);
         game = gameData.game();
-//        game.makeMove(new ChessMove(fromPosition, toPosition, null));
-//        DrawChessBoard.drawChessBoard(game, perspective, null);
-//        gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-//        server.gameDAO.updateGame(gameData);
         ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, null));
         waitForNotify();
-        return "Moved from " + from + " to " + to;
+        return "";
+    }
+
+    public String resign() throws ResponseException, DataAccessException {
+        GameData gameData = gameDAO.getGame(gameID);
+        game = gameData.game();
+        String username = authDAO.getUsername(authToken);
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
+            gameDAO.updateGame(new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), game));
+            ws.resign(gameID, authToken);
+        }
+        else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
+            gameDAO.updateGame(new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), game));
+            ws.resign(gameID, authToken);
+        }
+        else {
+            ws.resign(gameID, authToken);
+        }
+        state = State.LOGGED_IN;
+        return "You have resigned.";
     }
 
     public String highlight(String ... params) throws DataAccessException {
@@ -287,7 +305,7 @@ public class Client implements ServerMessageObserver {
         }
         var position = params[0];
         var chessPosition = parsePosition(position);
-        var gameData = server.gameDAO.getGame(gameID);
+        var gameData = gameDAO.getGame(gameID);
         game = gameData.game();
         DrawChessBoard.drawChessBoard(game, perspective, chessPosition);
         return "Highlighted position " + position;
@@ -347,11 +365,13 @@ public class Client implements ServerMessageObserver {
             case ERROR -> {
                 ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
                 System.out.println(errorMessage.getErrorMessage());
+                notifyAll();
                 break;
             }
             case NOTIFICATION -> {
                 NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
                 System.out.println(notificationMessage.getMessage());
+                notifyAll();
                 break;
             }
             case LOAD_GAME -> {

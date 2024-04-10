@@ -91,5 +91,4 @@ public class WebSocketCommunicator extends Endpoint {
             throw new ResponseException(500, ex.getMessage());
         }
     }
-
 }
