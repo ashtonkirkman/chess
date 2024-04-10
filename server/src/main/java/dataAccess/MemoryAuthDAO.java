@@ -25,6 +25,16 @@ public class MemoryAuthDAO implements AuthDAO{
         }
         throw new DataAccessException("Error: Auth token not found");
     }
+
+    public String getUsername(String authToken) throws DataAccessException {
+        for (AuthData a : authTokens) {
+            if (a.authToken().equals(authToken)) {
+                return a.username();
+            }
+        }
+        throw new DataAccessException("Error: Auth token not found");
+    }
+
     public void deleteAuth(String authToken) throws DataAccessException {
         if (!authTokens.removeIf(a -> a.authToken().equals(authToken))) {
             throw new DataAccessException("Error: Auth token not found");

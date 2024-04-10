@@ -1,6 +1,8 @@
 package client.ui;
 
 import client.websocket.ServerMessageObserver;
+import client.websocket.WebSocketCommunicator;
+import com.google.gson.Gson;
 import exception.ResponseException;
 import model.GameData;
 import server.Server;
@@ -10,10 +12,14 @@ import java.util.Arrays;
 import java.util.Scanner;
 import chess.*;
 import dataAccess.*;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import static java.util.Objects.isNull;
 
-public class Client {
+public class Client implements ServerMessageObserver {
     private DrawChessBoard chessBoard;
     private ServerFacade serverFacade;
     private final String serverUrl;
@@ -23,6 +29,7 @@ public class Client {
     private int gameID;
     private ChessGame game;
     private String perspective;
+    private WebSocketCommunicator ws;
 
     public Client(String serverUrl) {
         this.chessBoard = new DrawChessBoard();
@@ -157,6 +164,7 @@ public class Client {
     }
 
     public String join(String... params) throws ResponseException, IOException, DataAccessException {
+        this.ws = new WebSocketCommunicator(serverUrl, this);
         if (params.length < 1) {
             return "Usage: join <ID> [WHITE|BLACK|<empty>]";
         }
@@ -165,24 +173,24 @@ public class Client {
         serverFacade.joinGame(authToken, Integer.parseInt(id), color);
         gameID = Integer.parseInt(id);
         perspective = color;
+        ChessGame.TeamColor playerColor = (color == null) ? null : (color.equalsIgnoreCase("white") ? ChessGame.TeamColor.WHITE : ChessGame.TeamColor.BLACK);
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
-        if (color == null || color.equalsIgnoreCase("white")) {
-            DrawChessBoard.drawChessBoard(game, "white", null);
-        }
-        else {
-            DrawChessBoard.drawChessBoard(game, "black", null);
-        }
         gameID = Integer.parseInt(id);
         if(color == null) {
             state = State.OBSERVING;
+            ws.observe(gameID, authToken);
+            waitForNotify();
             return "Joined game " + id + " as an observer";
         }
         state = State.PLAYING;
+        ws.join(gameID, authToken, playerColor);
+        waitForNotify();
         return "Joined game " + id + " as " + color;
     }
 
     public String observe(String... params) throws ResponseException, IOException, DataAccessException {
+        this.ws = new WebSocketCommunicator(serverUrl, this);
         if (params.length != 1) {
             return "Usage: observe <ID>";
         }
@@ -194,6 +202,8 @@ public class Client {
         DrawChessBoard.drawChessBoard(game, "white", null);
         state = State.OBSERVING;
         gameID = Integer.parseInt(id);
+        ws.observe(gameID, authToken);
+        waitForNotify();
         return "Joined game " + id + " as an observer";
     }
 
@@ -231,7 +241,7 @@ public class Client {
         return "You have left the game.";
     }
 
-    public String move(String... params) throws DataAccessException, InvalidMoveException {
+    public String move(String... params) throws ResponseException, DataAccessException, InvalidMoveException {
         if (params.length < 2) {
             return "Usage: move <FROM> <TO> <PROMOTION|<empty>>";
         }
@@ -242,11 +252,13 @@ public class Client {
         var promotion = (params.length > 2) ? params[2] : null;
         var gameData = server.gameDAO.getGame(gameID);
         game = gameData.game();
-        game.makeMove(new ChessMove(fromPosition, toPosition, null));
-        DrawChessBoard.drawChessBoard(game, perspective, null);
-        gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
-        server.gameDAO.updateGame(gameData);
-        return "Moved from " + from + " to " + to + " with promotion " + promotion;
+//        game.makeMove(new ChessMove(fromPosition, toPosition, null));
+//        DrawChessBoard.drawChessBoard(game, perspective, null);
+//        gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+//        server.gameDAO.updateGame(gameData);
+        ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, null));
+        waitForNotify();
+        return "Moved from " + from + " to " + to;
     }
 
     public String highlight(String ... params) throws DataAccessException {
@@ -278,12 +290,57 @@ public class Client {
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands" + EscapeSequences.RESET_TEXT;
 
         }
-        return EscapeSequences.SET_TEXT_COLOR_BLUE + "  create <NAME>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  list" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - games\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  join <ID> [WHITE|BLACK|<empty>]" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  observe <ID>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  logout" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - when you are done\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  quit" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - playing chess\n" +
-                EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands" + EscapeSequences.RESET_TEXT;
+        else if (state == State.LOGGED_IN) {
+            return EscapeSequences.SET_TEXT_COLOR_BLUE + "  create <NAME>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  list" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - games\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  join <ID> [WHITE|BLACK|<empty>]" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  observe <ID>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  logout" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - when you are done\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  quit" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - playing chess\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands" + EscapeSequences.RESET_TEXT;
+        }
+        else if (state == State.PLAYING) {
+            return EscapeSequences.SET_TEXT_COLOR_BLUE + "  leave" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  move <FROM> <TO> <PROMOTION|<empty>>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a piece\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT;
+        }
+        else {
+            return EscapeSequences.SET_TEXT_COLOR_BLUE + "  leave" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT;
+        }
+    }
+
+    private synchronized void waitForNotify() {
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public synchronized void notify(String message) {
+        ServerMessage sm = new Gson().fromJson(message, ServerMessage.class);
+        switch (sm.getServerMessageType()) {
+            case ERROR -> {
+                ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
+                System.out.println(errorMessage.getErrorMessage());
+                break;
+            }
+            case NOTIFICATION -> {
+                NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
+                System.out.println(notificationMessage.getMessage());
+                break;
+            }
+            case LOAD_GAME -> {
+                LoadGameMessage loadGameMessage = new Gson().fromJson(message, LoadGameMessage.class);
+                game = loadGameMessage.getGame();
+                DrawChessBoard.drawChessBoard(game, perspective, null);
+                notifyAll();
+                break;
+            }
+        }
     }
 }

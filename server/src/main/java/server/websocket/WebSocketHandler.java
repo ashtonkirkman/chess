@@ -31,8 +31,8 @@ public class WebSocketHandler {
             case JOIN_PLAYER -> join(session, msg);
             case JOIN_OBSERVER -> observe(session, msg);
             case MAKE_MOVE -> move(msg);
-            case LEAVE -> leave(session, msg);
-            case RESIGN -> resign(session, msg);
+//            case LEAVE -> leave(session, msg);
+//            case RESIGN -> resign(session, msg);
         }
     }
 

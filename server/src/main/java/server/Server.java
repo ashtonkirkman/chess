@@ -23,13 +23,9 @@ public class Server {
     private WebSocketHandler webSocketHandler;
 
     public Server(){
-        try {
-            authDAO = new MySqlAuthDAO();
-            userDAO = new MySqlUserDAO();
-            gameDAO = new MySqlGameDAO();
-        } catch (DataAccessException e) {
-            System.out.printf(e.getMessage());
-        }
+        authDAO = new MySqlAuthDAO();
+        userDAO = new MySqlUserDAO();
+        gameDAO = new MySqlGameDAO();
         loginService = new LoginService(userDAO, authDAO);
         registrationService = new RegistrationService(userDAO, authDAO);
         joinGameService = new JoinService(userDAO, authDAO, gameDAO);
