@@ -205,8 +205,25 @@ public class WebSocketHandler {
     public void leave(Session session, String msg) throws ResponseException {
         LeaveCommand leaveCommand = new Gson().fromJson(msg, LeaveCommand.class);
         int gameID = leaveCommand.getGameID();
+        GameData gameData = joinService.getGame(gameID);
         String authToken = leaveCommand.getAuthString();
         String username = joinService.getUsername(authToken);
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
+            gameData = new GameData(gameID, null, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            try {
+                updateGame(gameData);
+            } catch (DataAccessException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+        }
+        else if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
+            gameData = new GameData(gameID, gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+            try {
+                updateGame(gameData);
+            } catch (DataAccessException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+        }
         String message = String.format("%s has left the game", username);
         NotificationMessage notificationMessage = new NotificationMessage(message);
         try {
@@ -232,5 +249,9 @@ public class WebSocketHandler {
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
+    }
+
+    private void updateGame(GameData gameData) throws DataAccessException {
+        new MySqlGameDAO().updateGame(gameData);
     }
 }
