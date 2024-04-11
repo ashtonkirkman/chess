@@ -9,6 +9,7 @@ import server.Server;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 import chess.*;
 import dataAccess.*;
@@ -65,11 +66,13 @@ public class Client implements ServerMessageObserver {
         if (state == State.LOGGED_IN) {
             System.out.print("[LOGGED_IN] >>> " + "\n");
         } else if (state == State.LOGGED_OUT){
-            System.out.print(/*"\n" + */"[LOGGED_OUT] >>> " + "\n");
+            System.out.print("[LOGGED_OUT] >>> " + "\n");
         } else if (state == State.PLAYING){
-            System.out.print(/*"\n" + */"[PLAYING] >>> " + "\n");
+            System.out.print("[PLAYING] >>> " + "\n");
+        } else if (state == State.OBSERVING){
+            System.out.print("[OBSERVING] >>> " + "\n");
         } else {
-            System.out.print(/*"\n" + */"[OBSERVING] >>> " + "\n");
+            System.out.print("[GAME_OVER] >>> " + "\n");
         }
     }
 
@@ -112,13 +115,23 @@ public class Client implements ServerMessageObserver {
                     default -> "Unknown command: " + cmd;
                 };
             }
-            else {
+            else if (state == State.OBSERVING){
                 return switch(cmd) {
                     case "leave" -> leave();
                     case "help" -> help();
                     case "move" -> "As an observer, you cannot make a move.";
                     case "redraw" -> redraw();
                     case "highlight" -> highlight(params);
+                    default -> "Unknown command: " + cmd;
+                };
+            }
+            else {
+                return switch(cmd) {
+                    case "leave" -> leave();
+                    case "help" -> help();
+                    case "redraw" -> redraw();
+                    case "highlight" -> highlight(params);
+                    case "move" -> "The game is over. You cannot make any more moves.";
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -267,13 +280,19 @@ public class Client implements ServerMessageObserver {
         var promotion = (params.length > 2) ? params[2] : null;
         var gameData = gameDAO.getGame(gameID);
         game = gameData.game();
-        ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, null));
+        var promotionPiece = parsePromotion(promotion);
+        ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, promotionPiece));
         waitForNotify();
         return null;
-//        return "Moved from " + from + " to " + to;
     }
 
     public String resign() throws ResponseException, DataAccessException {
+        System.out.println("Are you sure you want to resign? (yes/no)");
+        Scanner scanner = new Scanner(System.in);
+        String line = scanner.nextLine();
+        if (!line.equalsIgnoreCase("yes")) {
+            return "Resignation cancelled.";
+        }
         GameData gameData = gameDAO.getGame(gameID);
         game = gameData.game();
         String username = authDAO.getUsername(authToken);
@@ -288,7 +307,7 @@ public class Client implements ServerMessageObserver {
         else {
             ws.resign(gameID, authToken);
         }
-        state = State.LOGGED_IN;
+        state = State.GAME_OVER;
         return "You have resigned.";
     }
 
@@ -311,6 +330,19 @@ public class Client implements ServerMessageObserver {
         var column = position.charAt(0) - 'a' + 1;
         var row = position.charAt(1) - '1' + 1;
         return new ChessPosition(row, column);
+    }
+
+    public ChessPiece.PieceType parsePromotion(String promotion) {
+        if (promotion == null) {
+            return null;
+        }
+        return switch (promotion) {
+            case "queen" -> ChessPiece.PieceType.QUEEN;
+            case "rook" -> ChessPiece.PieceType.ROOK;
+            case "bishop" -> ChessPiece.PieceType.BISHOP;
+            case "knight" -> ChessPiece.PieceType.KNIGHT;
+            default -> throw new IllegalArgumentException("Invalid promotion: " + promotion);
+        };
     }
 
     public String help() {
@@ -344,6 +376,7 @@ public class Client implements ServerMessageObserver {
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  redraw" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the board\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT;
         }
+
     }
 
     private synchronized void waitForNotify() {
@@ -367,6 +400,10 @@ public class Client implements ServerMessageObserver {
             case NOTIFICATION -> {
                 NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
                 System.out.println(notificationMessage.getMessage());
+                // if message contains the word "checkmate", "resigned", or "stalemate", then the game is over and state should be changed
+                if (notificationMessage.getMessage().contains("checkmate") || notificationMessage.getMessage().contains("resigned") || notificationMessage.getMessage().contains("stalemate")) {
+                    state = State.GAME_OVER;
+                }
                 notifyAll();
                 break;
             }
