@@ -48,12 +48,6 @@ public class ChessGame {
         }
     }
 
-    public static void main(String[] args) {
-
-        ChessGame game = new ChessGame();
-        System.out.println(game.board);
-    }
-
     /**
      * Set's which teams turn it is
      *
@@ -120,6 +114,26 @@ public class ChessGame {
             this.undoMove(move, capturedPiece);
         }
         if (currentPiece.getPieceType() == ChessPiece.PieceType.KING) {
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    ChessPosition destination = new ChessPosition(i + 1, j + 1);
+                    if (board.getPiece(destination) == null) {
+                        continue;
+                    }
+                    ChessPiece piece = board.getPiece(destination);
+                    if (piece.getTeamColor() != currentColor) {
+                        continue;
+                    }
+                    Collection<ChessMove> moves = piece.pieceMoves(board, destination);
+                    for (ChessMove move : moves) {
+                        capturedPiece = this.testMove(move);
+                        if(!this.isInCheck(currentColor)) {
+                            validMoves.add(new ChessMove(startPosition, destination, null));
+                        }
+                        this.undoMove(move, capturedPiece);
+                    }
+                }
+            }
             if(canCastleKingside(currentColor)) {
                 validMoves.add(new ChessMove(startPosition, new ChessPosition(startPosition.getRow(), startPosition.getColumn() + 2), null));
             }
@@ -222,7 +236,7 @@ public class ChessGame {
             throw new InvalidMoveException("You must select a piece");
         }
         if (currentPiece.getTeamColor() != teamTurn) {
-            throw new InvalidMoveException("It's not your turn");
+            throw new InvalidMoveException("That's not your piece");
         }
         if (!validMoves.contains(move)) {
             throw new InvalidMoveException("Invalid move: " + move);

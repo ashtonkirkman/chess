@@ -38,22 +38,6 @@ public class Client implements ServerMessageObserver {
         this.chessBoard = new DrawChessBoard();
         this.serverFacade = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
-//        if (ws == null) {
-//            try {
-//                ws = new WebSocketCommunicator(serverUrl, this);
-//            } catch (ResponseException e) {
-//                e.printStackTrace();
-//            }
-//        }
-    }
-
-    public void start(String serverUrl, String portNumber) {
-
-//        int port = Integer.parseInt(portNumber);
-//        server.run(port);
-
-        run();
-//        server.stop();
     }
 
     public void run() {
@@ -77,13 +61,13 @@ public class Client implements ServerMessageObserver {
 
     private void printPrompt() {
         if (state == State.LOGGED_IN) {
-            System.out.print("\n" + "[LOGGED_IN] >>> ");
+            System.out.print("[LOGGED_IN] >>> " + "\n");
         } else if (state == State.LOGGED_OUT){
-            System.out.print("\n" + "[LOGGED_OUT] >>> ");
+            System.out.print(/*"\n" + */"[LOGGED_OUT] >>> " + "\n");
         } else if (state == State.PLAYING){
-            System.out.print("\n" + "[PLAYING] >>> ");
+            System.out.print(/*"\n" + */"[PLAYING] >>> " + "\n");
         } else {
-            System.out.print("\n" + "[OBSERVING] >>> ");
+            System.out.print(/*"\n" + */"[OBSERVING] >>> " + "\n");
         }
     }
 
@@ -277,7 +261,7 @@ public class Client implements ServerMessageObserver {
         game = gameData.game();
         ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, null));
         waitForNotify();
-        return "";
+        return "Moved from " + from + " to " + to;
     }
 
     public String resign() throws ResponseException, DataAccessException {
@@ -325,7 +309,7 @@ public class Client implements ServerMessageObserver {
             return EscapeSequences.SET_TEXT_COLOR_BLUE + "  register <USERNAME> <PASSWORD> <EMAIL>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - to create an account\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  login <USERNAME> <PASSWORD>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - to play chess\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  quit" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - playing chess\n" +
-                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands" + EscapeSequences.RESET_TEXT;
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" + EscapeSequences.RESET_TEXT;
 
         }
         else if (state == State.LOGGED_IN) {
@@ -335,7 +319,7 @@ public class Client implements ServerMessageObserver {
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  observe <ID>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a game\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  logout" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - when you are done\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  quit" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - playing chess\n" +
-                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands" + EscapeSequences.RESET_TEXT;
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" + EscapeSequences.RESET_TEXT;
         }
         else if (state == State.PLAYING) {
             return EscapeSequences.SET_TEXT_COLOR_BLUE + "  leave" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" +

@@ -5,7 +5,6 @@ import chess.ChessMove;
 import com.google.gson.Gson;
 import dataAccess.*;
 import exception.ResponseException;
-import com.google.gson.Gson;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -16,7 +15,6 @@ import webSocketMessages.serverMessages.*;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Timer;
 
 @WebSocket
 public class WebSocketHandler {
@@ -79,8 +77,8 @@ public class WebSocketHandler {
         NotificationMessage notificationMessage = new NotificationMessage(responseMessage);
         LoadGameMessage loadGameMessage = new LoadGameMessage(game);
         try {
-            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
             connections.sendLoadGameMessage(gameID, authToken, loadGameMessage);
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
@@ -123,11 +121,12 @@ public class WebSocketHandler {
         ChessMove move = command.getMove();
         ChessGame.TeamColor teamTurn = game.getTeamTurn();
         String username = joinService.getUsername(authToken);
+        String blackUsername = gameData.blackUsername();
+        String whiteUsername = gameData.whiteUsername();
 
         if (teamTurn == ChessGame.TeamColor.WHITE && !Objects.equals(gameData.whiteUsername(), username)) {
             try {
-                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Not your turn"));
-                connections.sendLoadGameMessage(gameID, authToken, new LoadGameMessage(game));
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: It's not your turn"));
             } catch (IOException e) {
                 throw new ResponseException(500, e.getMessage());
             }
@@ -135,7 +134,7 @@ public class WebSocketHandler {
         }
         else if (teamTurn == ChessGame.TeamColor.BLACK && !Objects.equals(gameData.blackUsername(), username)) {
             try {
-                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Not your turn"));
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: It's not your turn"));
             } catch (IOException e) {
                 throw new ResponseException(500, e.getMessage());
             }
@@ -154,18 +153,38 @@ public class WebSocketHandler {
             return;
         }
 
-        String responseMessage = String.format("%s moved from %s to %s", username, move.getStartPosition(), move.getEndPosition());
+        String responseMessage = String.format("%s moved from %s to %s", username, move.getStartPosition().toString(), move.getEndPosition().toString());
         NotificationMessage notificationMessage = new NotificationMessage(responseMessage);
         LoadGameMessage loadGameMessage = new LoadGameMessage(game);
         try {
-            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
             connections.sendLoadGameMessage(gameID, "all", loadGameMessage);
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
 
+        if(game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+            responseMessage = String.format("%s is in checkmate! %s wins!", whiteUsername, blackUsername);
+            notificationMessage = new NotificationMessage(responseMessage);
+            try {
+                connections.sendNotificationMessage(gameID, "all", notificationMessage);
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            responseMessage = String.format("%s is in checkmate! %s wins!", blackUsername, whiteUsername);
+            notificationMessage = new NotificationMessage(responseMessage);
+            try {
+                connections.sendNotificationMessage(gameID, "all", notificationMessage);
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
+
         if(game.isInCheck(ChessGame.TeamColor.WHITE)) {
-            responseMessage = "White is in check!";
+            responseMessage = String.format("%s is in check!", whiteUsername);
             notificationMessage = new NotificationMessage(responseMessage);
             try {
                 connections.sendNotificationMessage(gameID, "all", notificationMessage);
@@ -173,25 +192,7 @@ public class WebSocketHandler {
                 throw new ResponseException(500, e.getMessage());
             }
         } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
-            responseMessage = "Black is in check!";
-            notificationMessage = new NotificationMessage(responseMessage);
-            try {
-                connections.sendNotificationMessage(gameID, "all", notificationMessage);
-            } catch (IOException e) {
-                throw new ResponseException(500, e.getMessage());
-            }
-        }
-
-        if(game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-            responseMessage = "Checkmate! Black wins!";
-            notificationMessage = new NotificationMessage(responseMessage);
-            try {
-                connections.sendNotificationMessage(gameID, "all", notificationMessage);
-            } catch (IOException e) {
-                throw new ResponseException(500, e.getMessage());
-            }
-        } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-            responseMessage = "Checkmate! White wins!";
+            responseMessage = String.format("%s is in check!", blackUsername);
             notificationMessage = new NotificationMessage(responseMessage);
             try {
                 connections.sendNotificationMessage(gameID, "all", notificationMessage);

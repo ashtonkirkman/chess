@@ -44,4 +44,12 @@ public class ChessPosition {
     public int hashCode() {
         return Objects.hash(row, col);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append((char) ('a' + col - 1));
+        sb.append(row);
+        return sb.toString();
+    }
 }
