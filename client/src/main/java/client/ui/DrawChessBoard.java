@@ -22,11 +22,11 @@ public class DrawChessBoard {
     public static void drawChessBoard(ChessGame game, String perspective, ChessPosition highlightedPiece) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
 
-        if (perspective.equalsIgnoreCase("white")) {
+        if (perspective == null || perspective.equalsIgnoreCase("white")) {
             drawWhiteHeaders(out);
             drawBoard(game, out, "white", highlightedPiece);
             drawWhiteHeaders(out);
-        } else {
+        } else if (perspective.equalsIgnoreCase("black")) {
             drawBlackHeaders(out);
             drawBoard(game, out, "black", highlightedPiece);
             drawBlackHeaders(out);

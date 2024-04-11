@@ -50,7 +50,9 @@ public class Client implements ServerMessageObserver {
 
             try {
                 String result = eval(line);
-                System.out.println(result);
+                if (result != null) {
+                    System.out.println(result);
+                }
             } catch (Throwable e) {
                 var msg = e.getMessage();
                 System.out.print(msg);
@@ -103,7 +105,7 @@ public class Client implements ServerMessageObserver {
                 return switch(cmd) {
                     case "leave" -> leave();
                     case "help" -> help();
-//                    case "redraw" -> redraw();
+                    case "redraw" -> redraw();
                     case "move" -> move(params);
                     case "resign" -> resign();
                     case "highlight" -> highlight(params);
@@ -115,6 +117,7 @@ public class Client implements ServerMessageObserver {
                     case "leave" -> leave();
                     case "help" -> help();
                     case "move" -> "As an observer, you cannot make a move.";
+                    case "redraw" -> redraw();
                     case "highlight" -> highlight(params);
                     default -> "Unknown command: " + cmd;
                 };
@@ -154,6 +157,11 @@ public class Client implements ServerMessageObserver {
             }
         }
         return gameInfo.toString();
+    }
+
+    public String redraw() {
+        DrawChessBoard.drawChessBoard(game, perspective, null);
+        return null;
     }
 
     public String join(String... params) throws ResponseException, IOException, DataAccessException {
@@ -261,7 +269,8 @@ public class Client implements ServerMessageObserver {
         game = gameData.game();
         ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, null));
         waitForNotify();
-        return "Moved from " + from + " to " + to;
+        return null;
+//        return "Moved from " + from + " to " + to;
     }
 
     public String resign() throws ResponseException, DataAccessException {
@@ -324,12 +333,15 @@ public class Client implements ServerMessageObserver {
         else if (state == State.PLAYING) {
             return EscapeSequences.SET_TEXT_COLOR_BLUE + "  leave" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  redraw" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the board\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  move <FROM> <TO> <PROMOTION|<empty>>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a piece\n" +
-                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT;
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  resign" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" + EscapeSequences.RESET_TEXT;
         }
         else {
             return EscapeSequences.SET_TEXT_COLOR_BLUE + "  leave" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the game\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  help" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - with possible commands\n" +
+                    EscapeSequences.SET_TEXT_COLOR_BLUE + "  redraw" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - the board\n" +
                     EscapeSequences.SET_TEXT_COLOR_BLUE + "  highlight <POSITION>" + EscapeSequences.SET_TEXT_COLOR_MAGENTA + " - a square\n" + EscapeSequences.RESET_TEXT;
         }
     }
