@@ -4,7 +4,9 @@ import chess.ChessGame;
 import chess.ChessMove;
 import com.google.gson.Gson;
 import dataAccess.*;
+import exception.BadRequestException;
 import exception.ResponseException;
+import exception.UnauthorizedException;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
@@ -14,12 +16,15 @@ import webSocketMessages.userCommands.*;
 import webSocketMessages.serverMessages.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
     private final JoinService joinService = new JoinService(new MySqlUserDAO(), new MySqlAuthDAO(), new MySqlGameDAO());
+    private final Map<Integer, Boolean> resignedStateMap = new HashMap<>();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) throws Exception {
@@ -39,17 +44,31 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
         connections.addConnection(authToken, gameID, session);
-        GameData gameData = joinService.getGame(gameID);
-        if(gameData == null) {
+
+        try {
+            joinService.getGame(gameID);
+        } catch (BadRequestException e) {
             try {
                 connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game does not exist"));
-            } catch (IOException e) {
-                throw new ResponseException(500, e.getMessage());
+            } catch (IOException ex) {
+                throw new ResponseException(500, ex.getMessage());
             }
             return;
         }
+
+        GameData gameData = joinService.getGame(gameID);
         ChessGame.TeamColor color = command.getPlayerColor();
         ChessGame game = gameData.game();
+        try {
+            joinService.getUsername(authToken);
+        } catch (UnauthorizedException e) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Unauthorized"));
+            } catch (IOException ex) {
+                throw new ResponseException(500, ex.getMessage());
+            }
+            return;
+        }
         String username = joinService.getUsername(authToken);
 
         if(color == ChessGame.TeamColor.WHITE) {
@@ -89,16 +108,28 @@ public class WebSocketHandler {
         int gameID = command.getGameID();
         String authToken = command.getAuthString();
         connections.addConnection(authToken, gameID, session);
-        GameData gameData = joinService.getGame(gameID);
-        if(gameData == null) {
+        try {
+            joinService.getGame(gameID);
+        } catch (BadRequestException e) {
             try {
                 connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game does not exist"));
-            } catch (IOException e) {
-                throw new ResponseException(500, e.getMessage());
+            } catch (IOException ex) {
+                throw new ResponseException(500, ex.getMessage());
             }
             return;
         }
+        GameData gameData = joinService.getGame(gameID);
         ChessGame game = gameData.game();
+        try {
+            joinService.getUsername(authToken);
+        } catch (UnauthorizedException e) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Unauthorized"));
+            } catch (IOException ex) {
+                throw new ResponseException(500, ex.getMessage());
+            }
+            return;
+        }
         String username = joinService.getUsername(authToken);
 
         String responseMessage = String.format("%s has joined the game as an observer", username);
@@ -123,6 +154,15 @@ public class WebSocketHandler {
         String username = joinService.getUsername(authToken);
         String blackUsername = gameData.blackUsername();
         String whiteUsername = gameData.whiteUsername();
+
+        if (resignedStateMap.getOrDefault(gameID, false)) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game is over"));
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
 
         if (teamTurn == ChessGame.TeamColor.WHITE && !Objects.equals(gameData.whiteUsername(), username)) {
             try {
@@ -158,7 +198,8 @@ public class WebSocketHandler {
         LoadGameMessage loadGameMessage = new LoadGameMessage(game);
         try {
             connections.sendLoadGameMessage(gameID, "all", loadGameMessage);
-            connections.sendNotificationMessage(gameID, "none", notificationMessage);
+//            connections.sendLoadGameMessage(gameID, authToken, loadGameMessage);
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
@@ -227,9 +268,9 @@ public class WebSocketHandler {
         String message = String.format("%s has left the game", username);
         NotificationMessage notificationMessage = new NotificationMessage(message);
         try {
+            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
             connections.removeConnectionToGame(authToken, gameID);
             connections.removeConnection(session);
-            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }
@@ -239,13 +280,30 @@ public class WebSocketHandler {
         ResignCommand resignCommand = new Gson().fromJson(msg, ResignCommand.class);
         int gameID = resignCommand.getGameID();
         String authToken = resignCommand.getAuthString();
+        GameData gameData = joinService.getGame(gameID);
         String username = joinService.getUsername(authToken);
+        if (resignedStateMap.getOrDefault(gameID, false)) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game is over"));
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
+
+        if (!Objects.equals(username, gameData.whiteUsername()) && !Objects.equals(username, gameData.blackUsername())) {
+            try {
+                connections.sendErrorMessage(authToken, new ErrorMessage("Error: You are an observer"));
+            } catch (IOException e) {
+                throw new ResponseException(500, e.getMessage());
+            }
+            return;
+        }
         String message = String.format("%s has resigned", username);
+        resignedStateMap.put(gameID, true);
         NotificationMessage notificationMessage = new NotificationMessage(message);
         try {
-            connections.removeConnectionToGame(authToken, gameID);
-            connections.removeConnection(session);
-            connections.sendNotificationMessage(gameID, authToken, notificationMessage);
+            connections.sendNotificationMessage(gameID, "none", notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
         }

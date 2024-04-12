@@ -109,9 +109,10 @@ public class Client implements ServerMessageObserver {
                 return switch(cmd) {
                     case "leave" -> leave();
                     case "help" -> help();
-                    case "move" -> "As an observer, you cannot make a move.";
+                    case "move" -> move(params);
                     case "redraw" -> redraw();
                     case "highlight" -> highlight(params);
+                    case "resign" -> resign();
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -121,7 +122,8 @@ public class Client implements ServerMessageObserver {
                     case "help" -> help();
                     case "redraw" -> redraw();
                     case "highlight" -> highlight(params);
-                    case "move" -> "The game is over. You cannot make any more moves.";
+                    case "move" -> move(params);
+                    case "resign" -> resign();
                     default -> "Unknown command: " + cmd;
                 };
             }
@@ -181,12 +183,12 @@ public class Client implements ServerMessageObserver {
         if(color == null) {
             state = State.OBSERVING;
             ws.observe(gameID, authToken);
-            waitForNotify();
+            waitForNotify(0);
             return "Joined game " + id + " as an observer";
         }
         state = State.PLAYING;
         ws.join(gameID, authToken, playerColor);
-        waitForNotify();
+        waitForNotify(0);
         return "Joined game " + id + " as " + color;
     }
 
@@ -200,7 +202,7 @@ public class Client implements ServerMessageObserver {
         state = State.OBSERVING;
         gameID = Integer.parseInt(id);
         ws.observe(gameID, authToken);
-        waitForNotify();
+        waitForNotify(0);
         return "Joined game " + id + " as an observer";
     }
 
@@ -250,7 +252,8 @@ public class Client implements ServerMessageObserver {
         var promotion = (params.length > 2) ? params[2] : null;
         var promotionPiece = parsePromotion(promotion);
         ws.move(gameID, authToken, new ChessMove(fromPosition, toPosition, promotionPiece));
-        waitForNotify();
+        waitForNotify(0);
+        waitForNotify(500);
         return null;
     }
 
@@ -262,8 +265,9 @@ public class Client implements ServerMessageObserver {
             return "Resignation cancelled.";
         }
         ws.resign(gameID, authToken);
+        waitForNotify(0);
         state = State.GAME_OVER;
-        return "You have resigned.";
+        return null;
     }
 
     public String highlight(String ... params) /*throws DataAccessException */{
@@ -332,9 +336,9 @@ public class Client implements ServerMessageObserver {
 
     }
 
-    private synchronized void waitForNotify() {
+    private synchronized void waitForNotify(long timeoutMillis) {
         try {
-            wait();
+            wait(timeoutMillis);
         } catch (InterruptedException e) {
             System.out.println("Interrupted");
         }
