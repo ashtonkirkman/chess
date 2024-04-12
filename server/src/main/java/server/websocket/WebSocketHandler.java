@@ -198,7 +198,6 @@ public class WebSocketHandler {
         LoadGameMessage loadGameMessage = new LoadGameMessage(game);
         try {
             connections.sendLoadGameMessage(gameID, "all", loadGameMessage);
-//            connections.sendLoadGameMessage(gameID, authToken, loadGameMessage);
             connections.sendNotificationMessage(gameID, authToken, notificationMessage);
         } catch (IOException e) {
             throw new ResponseException(500, e.getMessage());
