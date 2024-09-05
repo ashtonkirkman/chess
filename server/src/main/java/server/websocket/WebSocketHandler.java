@@ -155,7 +155,7 @@ public class WebSocketHandler {
         String blackUsername = gameData.blackUsername();
         String whiteUsername = gameData.whiteUsername();
 
-        if (resignedStateMap.getOrDefault(gameID, false)) {
+        if (resignedStateMap.containsKey(gameID) && resignedStateMap.get(gameID)) {
             try {
                 connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game is over"));
             } catch (IOException e) {
@@ -281,7 +281,7 @@ public class WebSocketHandler {
         String authToken = resignCommand.getAuthString();
         GameData gameData = joinService.getGame(gameID);
         String username = joinService.getUsername(authToken);
-        if (resignedStateMap.getOrDefault(gameID, false)) {
+        if (resignedStateMap.containsKey(gameID) && resignedStateMap.get(gameID)) {
             try {
                 connections.sendErrorMessage(authToken, new ErrorMessage("Error: Game is over"));
             } catch (IOException e) {
